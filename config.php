@@ -4,7 +4,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 // IMPORTANT: In a production environment, you should move your .env file
 // outside of the public web directory for security reasons.
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->load();
+$dotenv->safeLoad(); // Use safeLoad() instead of load()
 
 $db_host = $_ENV['DB_HOST'];
 $db_name = $_ENV['DB_NAME'];
