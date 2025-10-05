@@ -1,21 +1,28 @@
 <?php
-// Database Configuration using Environment Variables
-$host_eco = getenv('DB_HOST');
-$dbname_eco = getenv('DB_NAME');
-$user_eco = 'mariadb'; // As specified, the user is not from an environment variable
-$pass_eco = getenv('DB_PASS');
+require_once __DIR__ . '/vendor/autoload.php';
 
-// Zoho API Configuration using Environment Variables
-// The ZOHO_API variable holds the Client ID
-define('ZOHO_CLIENT_ID', getenv('ZOHO_API')); 
-// The Client Secret should also be an environment variable for security
-define('ZOHO_CLIENT_SECRET', getenv('ZOHO_CLIENT_SECRET')); 
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
 
-// This URL must be the publicly accessible URL of your zoho-oauth.php file
-// It dynamically creates the URL based on your server's domain
+$db_host = $_ENV['DB_HOST'];
+$db_name = $_ENV['DB_NAME'];
+$db_user = $_ENV['DB_USER'];
+$db_pass = $_ENV['DB_PASS'];
+
+try {
+    $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    // In production, you would log this error and show a generic message.
+    die("Could not connect to the database: " . $e->getMessage());
+}
+
+
+define('ZOHO_CLIENT_ID', $_ENV['ZOHO_CLIENT_ID']);
+define('ZOHO_CLIENT_SECRET', $_ENV['ZOHO_CLIENT_SECRET']);
 define('ZOHO_REDIRECT_URI', 'http://' . $_SERVER['HTTP_HOST'] . '/Outreach/zoho-oauth.php');
 
-// Start PHP Session if not already started
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }

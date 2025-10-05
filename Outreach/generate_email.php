@@ -1,20 +1,17 @@
 <?php
-require_once '../config.php'; // Includes the API key definitions
+require_once '../config.php';
 
-// Securely get API keys from the server environment
-$openRouterApiKey = getenv('OPENROUTER_API');
-$perplexityApiKey = getenv('PERP_API');
+$openRouterApiKey = $_ENV['OPENROUTER_API'];
+$perplexityApiKey = $_ENV['PERP_API'];
 
 header('Content-Type: application/json');
 
-// Security check: ensure user is authenticated in the session
 if (!isset($_SESSION['isAuthenticated']) || $_SESSION['isAuthenticated'] !== true) {
     echo json_encode(['error' => 'Authentication required.']);
     http_response_code(401);
     exit();
 }
 
-// Get the POST data sent from the frontend JavaScript
 $input = json_decode(file_get_contents('php://input'), true);
 $businessName = $input['businessName'] ?? '';
 $websiteStatus = $input['websiteStatus'] ?? '';
@@ -26,8 +23,7 @@ if (empty($businessName) || empty($websiteStatus)) {
     exit();
 }
 
-// --- AI Prompt and Configuration ---
-$emailExamples = '{"outreach_messages":[{"business":"La Nueva Casita Café","subject":"Website for La Nueva Casita Café","body":"Hi La Nueva Casita Café Team,...","close_off":"Thanks again for all you do for Las Cruces!\\n\\nBest,\\nNicholas","website_status":"No website","reason_for_contact":"Build a simple, modern, and easy-to-manage website"}]}'; // Abridged for brevity
+$emailExamples = '{"outreach_messages":[{"business":"La Nueva Casita Café","subject":"Website for La Nueva Casita Café","body":"Hi La Nueva Casita Café Team,...","close_off":"Thanks again for all you do for Las Cruces!\\n\\nBest,\\nNicholas","website_status":"No website","reason_for_contact":"Build a simple, modern, and easy-to-manage website"}]}';
 
 $systemPrompt = "You are an expert copywriter for Blacnova (www.blacnova.net), a web development agency in Las Cruces, NM. Your task is to generate a single, concise, professional, and friendly outreach email object within a JSON structure. The output MUST be a valid JSON object matching this schema and contain only one message in the array: \n" .
 '{ "outreach_messages": [ { "business": "string", "subject": "string", "body": "string", "close_off": "string", "website_status": "string", "reason_for_contact": "string" } ] }' .
@@ -35,7 +31,6 @@ $systemPrompt = "You are an expert copywriter for Blacnova (www.blacnova.net), a
 
 $userQuery = "Generate one outreach message for:\nBusiness Name: {$businessName}\nWebsite Status: {$websiteStatus}\nPrimary Reason for Contact: " . ($reason ?: 'Not provided');
 
-// --- Function to call an API using cURL ---
 function callApi($url, $apiKey, $payload, $headers = []) {
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
@@ -61,7 +56,6 @@ function callApi($url, $apiKey, $payload, $headers = []) {
         return ['error' => 'Invalid API response structure.'];
     }
 
-    // Extract the JSON part of the response
     preg_match('/\{[\s\S]*\}/', $rawContent, $matches);
     if (!isset($matches[0])) {
         return ['error' => 'API did not return a valid JSON object.'];
@@ -75,10 +69,8 @@ function callApi($url, $apiKey, $payload, $headers = []) {
     return $parsedResult['outreach_messages'][0];
 }
 
-// --- Main Logic: Try OpenRouter, then Perplexity ---
 $emailData = null;
 
-// 1. Try OpenRouter
 if ($openRouterApiKey) {
     $openRouterPayload = [
         "model" => "deepseek/deepseek-chat-v3.1:free",
@@ -94,7 +86,6 @@ if ($openRouterApiKey) {
     $emailData = callApi('https://openrouter.ai/api/v1/chat/completions', $openRouterApiKey, $openRouterPayload, $openRouterHeaders);
 }
 
-// 2. Fallback to Perplexity if OpenRouter fails or key is missing
 if (isset($emailData['error']) && $perplexityApiKey) {
     $perplexityPayload = [
         "model" => "llama-3-sonar-large-32k-online",
@@ -106,7 +97,6 @@ if (isset($emailData['error']) && $perplexityApiKey) {
     $emailData = callApi('https://api.perplexity.ai/chat/completions', $perplexityApiKey, $perplexityPayload);
 }
 
-// --- Final Response ---
 if (isset($emailData['error'])) {
     echo json_encode(['error' => 'Failed to generate email from all available AI sources.', 'details' => $emailData['error']]);
     http_response_code(500);
