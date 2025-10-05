@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+          
+      <meta charset="UTF-8">
+          
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          
+      <title>Blacnova - Outreach Tool</title>
+          
+      <link rel="icon" href="https://www.blacnova.net/img/bn_orange.png" type="image/png">
+          <script src="https://cdn.tailwindcss.com"></script>
+          
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+          
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+          
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+          
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+          
+      <style>
+                 /* Blacnova Inspired UI & Dark Theme */
+                 :root {
+                     --primary: #ea580c;
+                     --primary-light: #f97316;
+                     --dark-bg: #0a0a0a;
+                     --card-bg: #101010;
+                     --border-color: rgba(255, 255, 255, 0.1);
+                     --text-primary: #f3f4f6;
+                     --text-secondary: #9ca3af;
+                 }
+                 body {
+                     background-color: #fff; /* Default light background */
+                     font-family: 'Inter', sans-serif;
+                     -webkit-font-smoothing: antialiased;
+                     -moz-osx-font-smoothing: grayscale;
+                     position: relative;
+                     overflow-x: hidden;
+                     transition: background-color 0.3s ease, color 0.3s ease;
+                 }
+                 html.dark body {
+                     background-color: #101010;
+                 }
+                 
+                 /* Keep text inside app white/light-gray regardless of theme */
+                 body {
+                      color: var(--text-primary);
+                 }
+                 html:not(.dark) .text-white {
+                      color: var(--text-primary);
+                 }
+                 html:not(.dark) .text-gray-400 {
+                     color: var(--text-secondary);
+                 }
+                 html:not(.dark) #auth-modal .text-white {
+                     color: var(--text-primary) !important;
+                 }
+                 html:not(.dark) #auth-modal .text-gray-400 {
+                     color: var(--text-secondary) !important;
+                 }
+                 html:not(.dark) .glass-card,
+                 html:not(.dark) input,
+                 html:not(.dark) select,
+                 html:not(.dark) textarea {
+                     color: var(--text-primary);
+                 }
+                 html:not(.dark) .btn-secondary {
+                     color: var(--text-primary);
+                 }
+                 html:not(.dark) .btn-secondary.active {
+                     color: white;
+                 }
+                 /* General Styles */
+                 .glass-card {
+                     background-color: var(--card-bg);
+                     backdrop-filter: blur(10px);
+                     -webkit-backdrop-filter: blur(10px);
+                     border: 1px solid var(--border-color);
+                 }
+                 .btn-primary {
+                     background-color: var(--primary);
+                     color: white;
+                     transition: all 0.2s ease-in-out;
+                     border-radius: 0.75rem;
+                 }
+                 .btn-primary:hover {
+                     background-color: var(--primary-light);
+                     transform: translateY(-2px);
+                     box-shadow: 0 4px 15px rgba(234, 88, 12, 0.3);
+                 }
+                 .btn-primary:disabled {
+                     background-color: #555;
+                     cursor: not-allowed;
+                     transform: none;
+                     box-shadow: none;
+                 }
+                 .btn-secondary {
+                     background-color: #1a1a1a;
+                     border: 1px solid var(--border-color);
+                     color: var(--text-primary);
+                     transition: all 0.2s ease-in-out;
+                     border-radius: 0.75rem;
+                 }
+                 .btn-secondary:hover {
+                     background-color: #2a2a2a;
+                     border-color: var(--primary);
+                 }
+                 .btn-secondary.active {
+                     background-color: var(--primary);
+                     border-color: var(--primary);
+                     color: white;
+                     box-shadow: 0 0 10px rgba(234, 88, 12, 0.3);
+                 }
+                 /* --- Authentication Styles --- */
+                 #main-content {
+                     display: none;
+                     opacity: 0;
+                     transition: opacity 0.5s ease-in-out;
+                 }
+                 @keyframes shake {
+                     10%, 90% { transform: translate3d(-1px, 0, 0); }
+                     20%, 80% { transform: translate3d(2px, 0, 0); }
+                     30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+                     40%, 60% { transform: translate3d(4px, 0, 0); }
+                 }
+                 .shake {
+                     animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+                 }
+                 /* --- Styles for Pattern Background --- */
+                 .pattern-container {
+                     position: fixed;
+                     top: 0;
+                     left: 0;
+                     width: 100%;
+                     height: 100vh;
+                     z-index: -1;
+                     overflow: hidden;
+                     pointer-events: none;
+                     mask-image: linear-gradient( to bottom, transparent 0%, black 15%, black 85%, transparent 100% );
+                     -webkit-mask-image: linear-gradient( to bottom, transparent 0%, black 15%, black 85%, transparent 100% );
+                 }
+                 .pattern-icon {
+                     position: absolute;
+                     display: block;
+                     width: 80px;
+                     height: 80px;
+                     background-size: contain;
+                     background-repeat: no-repeat;
+                     will-change: transform, opacity;
+                     transition: background-image 0.3s ease;
+                 }
+                 html.dark .pattern-icon {
+                     background-image: url('img/icon_dark.png');
+                 }
+                 html:not(.dark) .pattern-icon {
+                      background-image: url('img/icon.png');
+                 }
+                 /* --- Specific styles for Reacher AI --- */
+                 input, select, textarea {
+                     background-color: #1a1a1a;
+                     border: 1px solid var(--border-color);
+                     border-radius: 0.75rem;
+                     color: var(--text-primary);
+                     transition: all 0.2s ease;
+                 }
+                 input:focus, select:focus, textarea:focus {
+                     outline: none;
+                     border-color: var(--primary);
+                     box-shadow: 0 0 0 3px rgba(212, 97, 28, 0.3);
+                 }
+                 .page { display: none; }
+                 .page.active { display: block; }
+                 
+                 #toast {
+                     position: fixed;
+                     bottom: -100px;
+                     left: 50%;
+                     transform: translateX(-50%);
+                     background-color: var(--primary);
+                     color: white;
+                     padding: 1rem 1.5rem;
+                     border-radius: 0.75rem;
+                     box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+                     transition: bottom 0.5s ease-in-out;
+                     z-index: 100;
+                 }
+                 #toast.show { bottom: 20px; }
+                 .loader {
+                     width: 1.25rem;
+                     height: 1.25rem;
+                     border: 2px solid #FFF;
+                     border-bottom-color: transparent;
+                     border-radius: 50%;
+                     display: inline-block;
+                     box-sizing: border-box;
+                     animation: rotation 1s linear infinite;
+                 }
+                 @keyframes rotation {
+                     0% { transform: rotate(0deg); }
+                     100% { transform: rotate(360deg); }
+                 }
+                 ::-webkit-scrollbar { width: 8px; }
+                 ::-webkit-scrollbar-track { background: #1a1a1a; }
+                 ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+                 ::-webkit-scrollbar-thumb:hover { background: #555; }
+             
+      </style>
+   </head>
+   <body class="min-h-screen">
+              
+      <div id="auth-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-black backdrop-blur-sm" style="display: none;">
+                 
+         <div id="auth-modal" class="glass-card p-8 rounded-2xl w-full max-w-sm">
+                         
+            <div class="flex justify-center mb-4">
+                                <img src="https://www.blacnova.net/img/bn_orange.png" alt="Blacnova Logo" class="h-12 w-12 object-contain">
+                            
+            </div>
+                         
+            <h2 class="text-2xl font-bold text-center text-white mb-2">Restricted Access</h2>
+                         
+            <p class="text-center text-gray-400 mb-6">Please enter your credentials to continue.</p>
+                         
+            <form id="login-form">
+                                
+               <div class="mb-4">
+                                       <label for="username" class="block text-sm font-medium text-gray-400 mb-2">User</label>
+                                       <input type="text" id="username" class="w-full bg-[#1a1a1a] border border-gray-700 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-primary transition text-white" required>
+                                   
+               </div>
+                                
+               <div class="mb-6">
+                                       <label for="passcode" class="block text-sm font-medium text-gray-400 mb-2">Passcode</label>
+                                       <input type="password" id="passcode" class="w-full bg-[#1a1a1a] border border-gray-700 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-primary transition text-white" required>
+                                   
+               </div>
+                                <button type="submit" class="w-full btn-primary font-bold py-2 px-4 rounded-lg">
+                                    Login
+                                </button>
+                                
+               <p id="auth-error" class="text-red-500 text-sm text-center mt-4 hidden">Invalid credentials. Please try again.</p>
+                            
+            </form>
+                    
+         </div>
+              
+      </div>
+              
+      <div id="main-content">
+                         
+         <header class="sticky top-0 z-40 w-full glass-card">
+                        
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                               
+               <div class="flex items-center justify-between py-4">
+                                      
+                  <div class="flex items-center space-x-4">
+                                             <img src="https://www.blacnova.net/img/bn.png" alt="Blacnova Logo" class="h-8 sm:h-14">
+                                                                     
+                     <h1 class="text-xl md:text-2xl font-light text-white hidden sm:block">Outreach</h1>
+                                         
+                  </div>
+                                      
+                  <div class="flex items-center space-x-4">
+                                              <a href="../index.html" class="text-gray-400 hover:text-white transition-colors duration-200 text-sm sm:text-base mr-4">Business Index</a>
+                                             <button id="theme-toggle-btn" class="text-gray-400 hover:text-white transition-colors duration-200">
+                                                 <i class="fas fa-moon text-lg"></i>
+                                             </button>
+                                         
+                  </div>
+                                  
+               </div>
+                           
+            </div>
+                    
+         </header>
+                         
+         <main class="container mx-auto p-4 sm:p-6 lg:p-8">
+                                     
+            <div class="mb-8 p-4 glass-card rounded-2xl">
+                                
+               <div id="nav-tabs" class="flex flex-wrap gap-3">
+                                        <button class="nav-tab btn-secondary active px-4 py-2 text-sm rounded-full" data-page="draft">
+                                            <i class="fas fa-magic mr-2"></i>Email Draft
+                                        </button>
+                                        <button class="nav-tab btn-secondary px-4 py-2 text-sm rounded-full" data-page="log">
+                                            <i class="fas fa-history mr-2"></i>Outreach Log
+                                        </button>
+                                        <button class="nav-tab btn-secondary px-4 py-2 text-sm rounded-full" data-page="settings">
+                                            <i class="fas fa-cog mr-2"></i>Settings
+                                        </button>
+                                   
+               </div>
+                            
+            </div>
+                                    
+            <div id="draft-page" class="page active">
+                               
+               <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                                          
+                  <div class="glass-card p-6 rounded-2xl">
+                                             
+                     <h2 class="text-xl font-semibold mb-6">1. Enter Prospect Details</h2>
+                                             
+                     <form id="draft-form" class="space-y-6">
+                                                    
+                        <div>
+                                                           <label for="business-name" class="block text-sm font-medium text-text-secondary mb-2">Business Name</label>
+                                                           <input type="text" id="business-name" placeholder="e.g., La Nueva Casita Café" required class="w-full px-4 py-3">
+                                                       
+                        </div>
+                                                    
+                        <div>
+                                                           <label for="recipient-email" class="block text-sm font-medium text-text-secondary mb-2">Recipient Email</label>
+                                                           <input type="email" id="recipient-email" placeholder="e.g., contact@business.com" required class="w-full px-4 py-3">
+                                                       
+                        </div>
+                                                    
+                        <div>
+                                                           <label for="website-status" class="block text-sm font-medium text-text-secondary mb-2">Website Status</label>
+                                                           
+                           <select id="website-status" required class="w-full px-4 py-3">
+                                                                  
+                              <option value="no-website">No Website</option>
+                                                                  
+                              <option value="outdated">Existing, but Outdated</option>
+                                                                  
+                              <option value="competitor-platform">On Squarespace/Wix/etc.</option>
+                                                                  
+                              <option value="bad-ux">Hard to Navigate / Bad UX</option>
+                                                              
+                           </select>
+                                                       
+                        </div>
+                                                    
+                        <div>
+                                                            <label for="reason" class="block text-sm font-medium text-text-secondary mb-2">Primary Reason for Contact (Optional)</label>
+                                                            <textarea id="reason" rows="3" placeholder="e.g., To build a modern, easy-to-manage site." class="w-full px-4 py-3"></textarea>
+                                                       
+                        </div>
+                                                    
+                        <div>
+                                                           <button type="submit" id="generate-btn" class="w-full btn-primary px-5 py-3 text-base flex items-center justify-center gap-2">
+                                                               <span class="btn-text">✨ Generate with AI</span>
+                                                               <span class="loader hidden"></span>
+                                                           </button>
+                                                       
+                        </div>
+                                                
+                     </form>
+                                         
+                  </div>
+                                                          
+                  <div class="glass-card p-6 rounded-2xl">
+                                             
+                     <h2 class="text-xl font-semibold mb-6">2. Review & Use Email</h2>
+                                             
+                     <div id="output-container" class="space-y-6 hidden">
+                                                    
+                        <div>
+                                                           <label class="block text-sm font-medium text-text-secondary mb-2">Subject</label>
+                                                           
+                           <div class="relative">
+                                                                  <textarea id="output-subject" class="w-full px-4 py-3 pr-12 bg-dark-bg"></textarea>
+                                                                  <button class="absolute top-1/2 right-3 -translate-y-1/2 text-text-secondary hover:text-primary" onclick="copyToClipboard('output-subject')">
+                                                                      <i class="fas fa-copy"></i>
+                                                                  </button>
+                                                              
+                           </div>
+                                                       
+                        </div>
+                                                    
+                        <div>
+                                                           <label class="block text-sm font-medium text-text-secondary mb-2">Body</label>
+                                                           
+                           <div class="relative">
+                                                                  <textarea id="output-body" rows="8" class="w-full px-4 py-3 pr-12 bg-dark-bg"></textarea>
+                                                                  <button class="absolute top-3 right-3 text-text-secondary hover:text-primary" onclick="copyToClipboard('output-body')">
+                                                                      <i class="fas fa-copy"></i>
+                                                                  </button>
+                                                              
+                           </div>
+                                                       
+                        </div>
+                                                    
+                                                    <button id="send-outreach-btn" disabled class="w-full btn-primary px-5 py-3 text-base flex items-center justify-center gap-2">
+                                                         <span class="btn-text"><i class="fas fa-paper-plane mr-2"></i>Send with Zoho & Log</span>
+                                                         <span class="loader hidden"></span>
+                                                    </button>
+                                                    <button id="save-outreach-btn" disabled class="w-full btn-secondary px-5 py-3 text-base">
+                                                        <i class="fas fa-save mr-2"></i>Log Manually
+                                                    </button>
+                                                
+                     </div>
+                                             
+                     <div id="placeholder-output" class="text-center text-text-secondary py-20">
+                                                    <i class="fas fa-envelope-open-text fa-3x mb-4"></i>
+                                                    
+                        <p>Your AI-generated email will appear here.</p>
+                                                
+                     </div>
+                                         
+                  </div>
+                                  
+               </div>
+                           
+            </div>
+                                    
+            <div id="log-page" class="page">
+                               
+               <div class="glass-card overflow-hidden rounded-2xl">
+                                      
+                  <div id="log-table-container" class="overflow-x-auto">
+                                             
+                     <table class="w-full text-left">
+                                                    
+                        <thead class="border-b border-border-color">
+                                                           
+                           <tr>
+                                                                  
+                              <th class="px-6 py-4 font-semibold">Business</th>
+                                                                  
+                              <th class="px-6 py-4 font-semibold">Subject</th>
+                                                                  
+                              <th class="px-6 py-4 font-semibold">Date</th>
+                                                                  
+                              <th class="px-6 py-4 font-semibold">Status</th>
+                                                              
+                           </tr>
+                                                       
+                        </thead>
+                                                    
+                        <tbody id="log-table-body">
+                                                                                       
+                        </tbody>
+                                                
+                     </table>
+                                         
+                  </div>
+                                                          
+                  <div id="empty-log-placeholder" class="hidden text-center text-text-secondary py-20 px-6">
+                                             <i class="fas fa-history fa-3x mb-4 text-gray-600"></i>
+                                             
+                     <h3 class="mt-2 text-lg font-medium text-text-primary">No Outreach Logged</h3>
+                                             
+                     <p class="mt-1 text-sm">Generate and save an email to see your history.</p>
+                                         
+                  </div>
+                                  
+               </div>
+                           
+            </div>
+                                     
+            <div id="settings-page" class="page">
+                                  
+               <div class="glass-card p-6 max-w-lg mx-auto rounded-2xl">
+                                         
+                  <h2 class="text-xl font-semibold mb-4">Zoho Mail Integration</h2>
+                                         
+                  <div id="zoho-status">
+                                                
+                     <p class="text-text-secondary mb-4">Connect your Zoho Mail account to send outreach emails directly from this panel.</p>
+                                                 <button id="connect-zoho-btn" class="btn-primary px-5 py-3">
+                                                     Connect to Zoho
+                                                 </button>
+                                            
+                  </div>
+                                    
+               </div>
+                            
+            </div>
+                    
+         </main>
+             
+      </div>
+              
+      <div id="toast"></div>
+          <script>
+                 document.addEventListener('DOMContentLoaded', () => {
+                     const authOverlay = document.getElementById('auth-overlay');
+                     const loginForm = document.getElementById('login-form');
+                     const mainContent = document.getElementById('main-content');
+                     const authError = document.getElementById('auth-error');
+                     const authModal = document.getElementById('auth-modal');
+         
+                     function initializeApp() {
+                         mainContent.style.display = 'block';
+                         setTimeout(() => { mainContent.style.opacity = '1'; }, 10);
+         
+                         // --- THEME & BG ---
+                         const themeToggleBtn = document.getElementById('theme-toggle-btn');
+                         const sunIconClass = 'fa-sun';
+                         const moonIconClass = 'fa-moon';
+         
+                         const applyTheme = (theme) => {
+                             const icon = themeToggleBtn.querySelector('i');
+                             if (theme === 'dark') {
+                                 document.documentElement.classList.add('dark');
+                                 icon.classList.remove(moonIconClass);
+                                 icon.classList.add(sunIconClass);
+                             } else {
+                                 document.documentElement.classList.remove('dark');
+                                 icon.classList.remove(sunIconClass);
+                                 icon.classList.add(moonIconClass);
+                             }
+                         };
+                         const toggleTheme = () => {
+                             const currentTheme = localStorage.getItem('theme') || 'dark';
+                             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                             localStorage.setItem('theme', newTheme);
+                             applyTheme(newTheme);
+                         };
+                         themeToggleBtn.addEventListener('click', toggleTheme);
+                         applyTheme(localStorage.getItem('theme') || 'dark');
+         
+                         const bodyElement = document.body;
+                         if (bodyElement) {
+                             const patternContainer = document.createElement('div');
+                             patternContainer.className = 'pattern-container';
+                             bodyElement.prepend(patternContainer);
+                             
+                             const iconCount = 50;
+                             const minDistance = 18;
+                             const placedIcons = [];
+                             const maxAttempts = 100;
+         
+                             for (let i = 0; i < iconCount; i++) {
+                                 let validPosition = false;
+                                 let newIconPos = {};
+                                 let attempts = 0;
+         
+                                 while (!validPosition && attempts < maxAttempts) {
+                                     newIconPos = {
+                                         top: Math.random() * 100,
+                                         left: Math.random() * 100
+                                     };
+                                     let isOverlapping = false;
+                                     for (const placedIcon of placedIcons) {
+                                         const distTop = newIconPos.top - placedIcon.top;
+                                         const distLeft = newIconPos.left - placedIcon.left;
+                                         if (Math.sqrt(distTop * distTop + distLeft * distLeft) < minDistance) {
+                                             isOverlapping = true;
+                                             break;
+                                         }
+                                     }
+                                     if (!isOverlapping) {
+                                         validPosition = true;
+                                     }
+                                     attempts++;
+                                 }
+         
+                                 if (validPosition) {
+                                     placedIcons.push(newIconPos);
+                                     const icon = document.createElement('span');
+                                     icon.className = 'pattern-icon';
+                                     const rotation = Math.random() * 360;
+                                     const scale = 0.6 + Math.random() * 0.5;
+                                     icon.style.top = `${newIconPos.top}%`;
+                                     icon.style.left = `${newIconPos.left}%`;
+                                     icon.style.transform = `translate(-50%, -50%) rotate(${rotation}deg) scale(${scale})`;
+                                     icon.style.opacity = (0.03 + Math.random() * 0.04).toFixed(3);
+                                     patternContainer.appendChild(icon);
+                                 }
+                             }
+                         }
+         
+                         // --- APP LOGIC ---
+                         let currentGeneratedEmail = null;
+                         let isZohoConnected = false;
+                         
+                         const navTabs = document.getElementById('nav-tabs');
+                         const pages = document.querySelectorAll('.page');
+                         navTabs.addEventListener('click', (e) => {
+                             if(e.target.tagName === 'BUTTON') {
+                                 const pageId = e.target.getAttribute('data-page');
+                                 
+                                 navTabs.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+                                 e.target.classList.add('active');
+         
+                                 pages.forEach(page => page.classList.remove('active'));
+                                 document.getElementById(`${pageId}-page`).classList.add('active');
+                             }
+                         });
+                         
+                         const toast = document.getElementById('toast');
+                         function showToast(message, type = 'success') {
+                             toast.textContent = message;
+                             toast.style.backgroundColor = type === 'error' ? '#c53030' : 'var(--primary)';
+                             toast.classList.add('show');
+                             setTimeout(() => { toast.classList.remove('show'); }, 3000);
+                         }
+                         
+                         window.copyToClipboard = function(elementId) {
+                             const textarea = document.getElementById(elementId);
+                             textarea.select();
+                             try {
+                                 document.execCommand('copy');
+                                 showToast('Copied to clipboard!');
+                             } catch (err) {
+                                 showToast('Failed to copy.');
+                             }
+                             window.getSelection().removeAllRanges();
+                         }
+                         
+                         const draftForm = document.getElementById('draft-form');
+                         const generateBtn = document.getElementById('generate-btn');
+                         
+                         draftForm.addEventListener('submit', (e) => {
+                             e.preventDefault();
+                             generateEmailWithAi();
+                         });
+                         
+                         async function generateEmailWithAi() {
+                             const businessName = document.getElementById('business-name').value;
+                             const websiteStatus = document.getElementById('website-status').value;
+                             const reason = document.getElementById('reason').value;
+         
+                             if (!businessName) {
+                                 showToast("Please enter a business name.", "error");
+                                 return;
+                             }
+                             
+                             const btnText = generateBtn.querySelector('.btn-text');
+                             const loader = generateBtn.querySelector('.loader');
+         
+                             btnText.classList.add('hidden');
+                             loader.classList.remove('hidden');
+                             generateBtn.disabled = true;
+         
+     
+                             };
+         
+                             const emailExamples = {
+                                 "outreach_messages": [
+                                     { "business": "La Nueva Casita Café", "subject": "Website for La Nueva Casita Café", "body": "Hi La Nueva Casita Café Team,\n\nFirst off, thank you for everything you do for the community.\n\nI’m reaching out from Blacnova (www.blacnova.net) because I noticed La Nueva Casita Café doesn’t have a website yet. We can build a simple, modern, and easy-to-manage site so customers can easily view your menu, hours, and specials. With our Blacnova Dashboard, your team can update content anytime. No developer required and we handle all setup and ongoing support.\n\nIf you’re interested, I’d be happy to walk you through what we could do for La Nueva Casita Café. You can reach me at nic@blacnova.net or (575) 270-1276.", "close_off": "Thanks again for all you do for Las Cruces!\n\nBest,\nNicholas", "website_status": "No website", "reason_for_contact": "Build a simple, modern, and easy-to-manage website" },
+                                     { "business": "Maddox Plumbing", "subject": "Website for Maddox Plumbing", "body": "Hi Maddox Plumbing,\n\nFirst off, thank you for the work you do for the community.\n\nI’m reaching out from Blacnova (www.blacnova.net) because I noticed Maddox Plumbing doesn’t have a website yet. We can create a simple, modern, and easy-to-manage site so customers can quickly see your services, contact info, and service areas. With our Blacnova Dashboard, your team can update content anytime—no developer needed—and we handle all setup and ongoing support.\n\nIf you’re interested, I’d be happy to show you what we could do for Maddox Plumbing. You can reach me at nic@blacnova.net or (575) 270-1276.", "close_off": "Thanks again for all you do for the Las Cruces community!\n\nBest,\nNicholas", "website_status": "No website", "reason_for_contact": "Build a simple, modern, and easy-to-manage website" },
+                                     { "business": "L&L Janitorial", "subject": "A message for L&L Janitorial", "body": "Hi L&L Janitorial Team,\n\nFirst off, thank you for the work you do for the community.\n\nI’m reaching out from Blacnova (www.blacnova.net), a local business here in Las Cruces. I noticed your website is on Squarespace. We can offer a more modern, appealing website at a better price, and we’d even be happy to design a demo so you can see exactly how it would look before committing.\n\nBeing local, we provide personalized support and hands-on guidance—something a big platform like Squarespace can’t match. Your team can manage updates easily through our Blacnova Dashboard, and we handle all setup and ongoing support.\n\nIf you’re open, I’d love to show you what we can do for L&L Janitorial. You can reach me at nic@blacnova.net or (575) 270-1276.", "close_off": "Thanks for all you do for Las Cruces!\n\nBest,\nNicholas", "website_status": "Existing website", "reason_for_contact": "Website is outdated and on Squarespace; offer modern, more cost-effective redesign" },
+                                     { "business": "Dick’s Café", "subject": "A Brand-New Website for Dick’s Café", "body": "Hi Dick’s Café,\n\nFirst off, thank you for everything you do for the community. Your café is a historic and beloved part of Las Cruces, and it’s clear people really value it.\n\nI’m reaching out from Blacnova (www.blacnova.net), a local business here in Las Cruces. We noticed your current website is a bit outdated, and we’d love to help modernize it. We can build a demo website first so you can see exactly how it would look before making any decisions. We can match your current website costs or, if that doesn’t work, we’re happy to negotiate a fair price—we’d just love the opportunity to have Dick’s Café as one of our clients.\n\nOur team provides personalized, local support, and with the Blacnova Dashboard, your team can easily manage updates anytime.\n\nIf you’re interested, I’d be happy to show you what we can do. You can reach me at nic@blacnova.net or (575) 270-1276.", "close_off": "Thanks again for all you do for Las Cruces!\n\nBest,\nNicholas", "website_status": "Existing website", "reason_for_contact": "Website is outdated; offer modern redesign and demo" },
+                                     { "business": "Café de Mesilla", "subject": "New Website for Café de Mesilla", "body": "Hi Café de Mesilla Team,\n\nI’m reaching out from Blacnova (www.blacnova.net). We noticed your current website is a bit hard to navigate and could use a modern refresh. We’d love to build a demo website so you can see exactly how a more user-friendly, visually appealing site could look before making any commitments.\n\nWith our Blacnova Dashboard, your team can easily update menus, hours, and specials anytime, and we provide full support along the way. Our goal is to make your online presence as welcoming and professional as your café itself.\n\nIf you’re interested, I’d be happy to show you what we can do. You can reach me at nic@blacnova.net or (575) 270-1276.", "close_off": "Thanks again for all you do for Mesilla!\n\nBest,\nNicholas", "website_status": "Existing website", "reason_for_contact": "Website is hard to navigate; offer more user-friendly, modern site" }
+                                 ]
+                             };
+         
+                             const systemPrompt = `You are an expert copywriter for Blacnova (www.blacnova.net), a web development agency in Las Cruces, NM. Your task is to generate a single, concise, professional, and friendly outreach email object within a JSON structure. The output MUST be a valid JSON object matching this schema and contain only one message in the array: 
+                             { "outreach_messages": [ { "business": "string", "subject": "string", "body": "string", "close_off": "string", "website_status": "string", "reason_for_contact": "string" } ] }
+                             Base your response on the following examples for tone and content: ${JSON.stringify(emailExamples, null, 2)}
+                             Only return the raw JSON object and nothing else.`;
+                             
+                             const userQuery = `Generate one outreach message for:\nBusiness Name: ${businessName}\nWebsite Status: ${websiteStatus}\nPrimary Reason for Contact: ${reason || 'Not provided'}`;
+                             
+                             let emailData;
+         
+                             try {
+                                  const openRouterPayload = { 
+                                     model: "deepseek/deepseek-chat-v3.1:free", // Primary Model
+                                     messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userQuery }],
+                                  };
+                                 const response = await fetch(openRouter.apiUrl, {
+                                     method: 'POST',
+                                     headers: { 
+                                         'Authorization': `Bearer ${openRouter.apiKey}`, 
+                                         'Content-Type': 'application/json',
+                                         'HTTP-Referer': 'https://blacnova.net',
+                                         'X-Title': 'Blacnova Reacher AI'
+                                     },
+                                     body: JSON.stringify(openRouterPayload)
+                                 });
+         
+                                 if (!response.ok) {
+                                     const errorBody = await response.text();
+                                     throw new Error(`OpenRouter API Error (${response.status}): ${errorBody}`);
+                                 }
+         
+                                 const result = await response.json();
+                                 const rawContent = result.choices[0].message.content;
+                                 const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
+                                  if (!jsonMatch) {
+                                     throw new Error("OpenRouter did not return a valid JSON object in its response.");
+                                 }
+         
+                                 const parsedResult = JSON.parse(jsonMatch[0]);
+                                  if (!parsedResult.outreach_messages || parsedResult.outreach_messages.length === 0) {
+                                     throw new Error("OpenRouter returned invalid JSON structure.");
+                                 }
+                                 emailData = parsedResult.outreach_messages[0];
+         
+                             } catch (error) {
+                                 console.error("OpenRouter Error, trying Perplexity:", error);
+                                 try {
+                                     const perplexityPayload = { 
+                                         model: "llama-3-sonar-large-32k-online", 
+                                         messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userQuery }]
+                                     };
+                                     const response = await fetch(perplexity.apiUrl, {
+                                         method: 'POST',
+                                         headers: { 'Authorization': `Bearer ${perplexity.apiKey}`, 'Content-Type': 'application/json' },
+                                         body: JSON.stringify(perplexityPayload)
+                                     });
+         
+                                      if (!response.ok) {
+                                         const errorBody = await response.text();
+                                         throw new Error(`Perplexity API Error (${response.status}): ${errorBody}`);
+                                     }
+         
+                                     const result = await response.json();
+                                     const rawContent = result.choices[0].message.content;
+                                     
+                                     const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
+                                     if (!jsonMatch) {
+                                         throw new Error("Perplexity did not return a valid JSON object in its response.");
+                                     }
+                                     
+                                     const parsedResult = JSON.parse(jsonMatch[0]);
+                                      if (!parsedResult.outreach_messages || parsedResult.outreach_messages.length === 0) {
+                                         throw new Error("Perplexity returned invalid JSON structure.");
+                                     }
+                                     emailData = parsedResult.outreach_messages[0];
+         
+                                 } catch (fallbackError) {
+                                     console.error("Fallback API Error (Perplexity):", fallbackError);
+                                     showToast("Failed to generate email from all sources. Please check API keys and model availability.", "error");
+                                     btnText.classList.remove('hidden');
+                                     loader.classList.add('hidden');
+                                     generateBtn.disabled = false;
+                                     return;
+                                 }
+                             }
+         
+                             document.getElementById('output-subject').value = emailData.subject;
+                             document.getElementById('output-body').value = `${emailData.body}\n\n${emailData.close_off}`;
+                             document.getElementById('output-container').classList.remove('hidden');
+                             document.getElementById('placeholder-output').classList.add('hidden');
+                             document.getElementById('save-outreach-btn').disabled = false;
+                             document.getElementById('send-outreach-btn').disabled = !isZohoConnected;
+                             currentGeneratedEmail = emailData;
+         
+                             btnText.classList.remove('hidden');
+                             loader.classList.add('hidden');
+                             generateBtn.disabled = false;
+                         }
+         
+                         const sendBtn = document.getElementById('send-outreach-btn');
+                         const saveBtn = document.getElementById('save-outreach-btn');
+         
+                         sendBtn.addEventListener('click', () => sendEmailWithZoho());
+                         saveBtn.addEventListener('click', () => logOutreach('manual'));
+                         
+                         async function sendEmailWithZoho() {
+                             if (!currentGeneratedEmail) return;
+         
+                             const btnText = sendBtn.querySelector('.btn-text');
+                             const loader = sendBtn.querySelector('.loader');
+                             btnText.classList.add('hidden');
+                             loader.classList.remove('hidden');
+                             sendBtn.disabled = true;
+         
+                             try {
+                                 showToast("This is a demo. Email sending requires a backend.", 'error');
+                                 logOutreach('sent');
+                             } catch (error) {
+                                 showToast(error.message, 'error');
+                                 console.error("Error sending email:", error);
+                             } finally {
+                                 btnText.classList.remove('hidden');
+                                 loader.classList.add('hidden');
+                                 sendBtn.disabled = false;
+                             }
+                         }
+         
+                         function logOutreach(status) {
+                             if (!currentGeneratedEmail) return;
+                             
+                             const logEntry = {
+                                 ...currentGeneratedEmail,
+                                 subject: document.getElementById('output-subject').value,
+                                 body: document.getElementById('output-body').value, // This now includes the close_off
+                                 date: new Date().toISOString().split('T')[0],
+                                 status: status
+                             };
+         
+                             let log = JSON.parse(localStorage.getItem('outreachLog') || '[]');
+                             log.unshift(logEntry);
+                             localStorage.setItem('outreachLog', JSON.stringify(log));
+         
+                             // Ensure table is visible and placeholder is hidden
+                             document.getElementById('log-table-container').classList.remove('hidden');
+                             document.getElementById('empty-log-placeholder').classList.add('hidden');
+         
+                             addLogRow(logEntry);
+                             showToast(`Outreach logged as ${status}.`);
+                             resetDraftingPanel();
+                         }
+         
+                         function resetDraftingPanel() {
+                             draftForm.reset();
+                             document.getElementById('output-container').classList.add('hidden');
+                             document.getElementById('placeholder-output').classList.remove('hidden');
+                             document.getElementById('save-outreach-btn').disabled = true;
+                             document.getElementById('send-outreach-btn').disabled = true;
+                             currentGeneratedEmail = null;
+                         }
+         
+                         function loadOutreachLog() {
+                             let log = JSON.parse(localStorage.getItem('outreachLog') || '[]');
+                             const tableContainer = document.getElementById('log-table-container');
+                             const emptyPlaceholder = document.getElementById('empty-log-placeholder');
+                             const tableBody = document.getElementById('log-table-body');
+                             
+                             tableBody.innerHTML = '';
+         
+                             if (log.length === 0) {
+                                 tableContainer.classList.add('hidden');
+                                 emptyPlaceholder.classList.remove('hidden');
+                             } else {
+                                 tableContainer.classList.remove('hidden');
+                                 emptyPlaceholder.classList.add('hidden');
+                                 log.forEach(item => addLogRow(item));
+                             }
+                         }
+         
+                         function addLogRow(item) {
+                             const tableBody = document.getElementById('log-table-body');
+                             const newRow = document.createElement('tr');
+                             const statusClass = item.status === 'sent' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400';
+                             newRow.innerHTML = `
+                                 <td class="px-6 py-4">${item.business}</td>
+                                 <td class="px-6 py-4">${item.subject}</td>
+                                 <td class="px-6 py-4 text-text-secondary">${item.date}</td>
+                                 <td class="px-6 py-4"><span class="${statusClass} text-xs font-medium px-2.5 py-1 rounded-full capitalize">${item.status}</span></td>
+                             `;
+                             tableBody.appendChild(newRow);
+                         }
+         
+                         function checkZohoStatus() {
+                              const status = localStorage.getItem('zoho_auth_status');
+                              const statusContainer = document.getElementById('zoho-status');
+                              if (status === 'connected') {
+                                  isZohoConnected = true;
+                                  statusContainer.innerHTML = `<p class="text-green-400 mb-4 flex items-center"><i class="fas fa-check-circle mr-2"></i>Zoho Mail is connected.</p><button id="disconnect-zoho-btn" class="btn-secondary px-5 py-3 text-sm">Disconnect</button>`;
+                                  document.getElementById('disconnect-zoho-btn').addEventListener('click', () => {
+                                      localStorage.removeItem('zoho_auth_status');
+                                      isZohoConnected = false; checkZohoStatus(); showToast('Zoho disconnected.');
+                                  });
+                              } else {
+                                  isZohoConnected = false;
+                                  statusContainer.innerHTML = `<p class="text-text-secondary mb-4">Connect your Zoho Mail account to send outreach emails directly from this panel.</p><button id="connect-zoho-btn" class="btn-primary px-5 py-3">Connect to Zoho</button>`;
+                                  document.getElementById('connect-zoho-btn').addEventListener('click', () => {
+                                      showToast("This is a demo. Zoho connection requires a backend.", "error");
+                                  });
+                              }
+                         }
+                         
+                         checkZohoStatus();
+                         loadOutreachLog();
+                     }
+         
+                     function handleLogin(event) {
+                         event.preventDefault();
+                         const usernameInput = document.getElementById('username');
+                         const passcodeİnput = document.getElementById('passcode');
+                         const username = usernameInput.value;
+                         const passcode = passcodeİnput.value;
+         
+                         if (username.toLowerCase() === 'nic@blacnova.net' && passcode === '2900') {
+                             sessionStorage.setItem('isAuthenticated', 'true');
+                             authOverlay.style.transition = 'opacity 0.5s ease-out';
+                             authOverlay.style.opacity = '0';
+                             setTimeout(() => {
+                                 authOverlay.style.display = 'none';
+                                 initializeApp();
+                             }, 500);
+                         } else {
+                             authError.classList.remove('hidden');
+                             authModal.classList.add('shake');
+                             usernameInput.value = '';
+                             passcodeİnput.value = '';
+                             setTimeout(() => { authModal.classList.remove('shake'); }, 820);
+                         }
+                     }
+         
+                     if (sessionStorage.getItem('isAuthenticated') === 'true') {
+                         authOverlay.style.display = 'none';
+                         initializeApp();
+                     } else {
+                         authOverlay.style.display = 'flex';
+                         loginForm.addEventListener('submit', handleLogin);
+                     }
+                 });
+             
+      </script>
+   </body>
+</html>
