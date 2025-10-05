@@ -1,3 +1,4 @@
+<?php require_once '../config.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
    <head>
@@ -151,10 +152,10 @@
                      transition: background-image 0.3s ease;
                  }
                  html.dark .pattern-icon {
-                     background-image: url('img/icon_dark.png');
+                     background-image: url('../img/icon_dark.png');
                  }
                  html:not(.dark) .pattern-icon {
-                      background-image: url('img/icon.png');
+                      background-image: url('../img/icon.png');
                  }
                  /* --- Specific styles for Reacher AI --- */
                  input, select, textarea {
@@ -263,7 +264,7 @@
                   </div>
                                       
                   <div class="flex items-center space-x-4">
-                                              <a href="../index.html" class="text-gray-400 hover:text-white transition-colors duration-200 text-sm sm:text-base mr-4">Business Index</a>
+                                              <a href="../index.php" class="text-gray-400 hover:text-white transition-colors duration-200 text-sm sm:text-base mr-4">Business Index</a>
                                              <button id="theme-toggle-btn" class="text-gray-400 hover:text-white transition-colors duration-200">
                                                  <i class="fas fa-moon text-lg"></i>
                                              </button>
@@ -567,7 +568,7 @@
          
                          // --- APP LOGIC ---
                          let currentGeneratedEmail = null;
-                         let isZohoConnected = false;
+                         let isZohoConnected = <?php echo json_encode(isset($_SESSION['zoho_auth_status']) && $_SESSION['zoho_auth_status'] === 'connected'); ?>;
                          
                          const navTabs = document.getElementById('nav-tabs');
                          const pages = document.querySelectorAll('.page');
@@ -586,7 +587,7 @@
                          const toast = document.getElementById('toast');
                          function showToast(message, type = 'success') {
                              toast.textContent = message;
-                             toast.style.backgroundColor = type === 'error' ? '#c53030' : 'var(--primary)';
+                             toast.style.backgroundColor = type === 'error' ? '#ef4444' : 'var(--primary)';
                              toast.classList.add('show');
                              setTimeout(() => { toast.classList.remove('show'); }, 3000);
                          }
@@ -594,12 +595,11 @@
                          window.copyToClipboard = function(elementId) {
                              const textarea = document.getElementById(elementId);
                              textarea.select();
-                             try {
-                                 document.execCommand('copy');
-                                 showToast('Copied to clipboard!');
-                             } catch (err) {
-                                 showToast('Failed to copy.');
-                             }
+                             navigator.clipboard.writeText(textarea.value).then(() => {
+                                showToast('Copied to clipboard!');
+                             }).catch(err => {
+                                showToast('Failed to copy.', 'error');
+                             });
                              window.getSelection().removeAllRanges();
                          }
                          
@@ -611,134 +611,54 @@
                              generateEmailWithAi();
                          });
                          
-                         async function generateEmailWithAi() {
-                             const businessName = document.getElementById('business-name').value;
-                             const websiteStatus = document.getElementById('website-status').value;
-                             const reason = document.getElementById('reason').value;
-         
-                             if (!businessName) {
-                                 showToast("Please enter a business name.", "error");
-                                 return;
-                             }
-                             
-                             const btnText = generateBtn.querySelector('.btn-text');
-                             const loader = generateBtn.querySelector('.loader');
-         
-                             btnText.classList.add('hidden');
-                             loader.classList.remove('hidden');
-                             generateBtn.disabled = true;
-         
-     
-                             };
-         
-                             const emailExamples = {
-                                 "outreach_messages": [
-                                     { "business": "La Nueva Casita Café", "subject": "Website for La Nueva Casita Café", "body": "Hi La Nueva Casita Café Team,\n\nFirst off, thank you for everything you do for the community.\n\nI’m reaching out from Blacnova (www.blacnova.net) because I noticed La Nueva Casita Café doesn’t have a website yet. We can build a simple, modern, and easy-to-manage site so customers can easily view your menu, hours, and specials. With our Blacnova Dashboard, your team can update content anytime. No developer required and we handle all setup and ongoing support.\n\nIf you’re interested, I’d be happy to walk you through what we could do for La Nueva Casita Café. You can reach me at nic@blacnova.net or (575) 270-1276.", "close_off": "Thanks again for all you do for Las Cruces!\n\nBest,\nNicholas", "website_status": "No website", "reason_for_contact": "Build a simple, modern, and easy-to-manage website" },
-                                     { "business": "Maddox Plumbing", "subject": "Website for Maddox Plumbing", "body": "Hi Maddox Plumbing,\n\nFirst off, thank you for the work you do for the community.\n\nI’m reaching out from Blacnova (www.blacnova.net) because I noticed Maddox Plumbing doesn’t have a website yet. We can create a simple, modern, and easy-to-manage site so customers can quickly see your services, contact info, and service areas. With our Blacnova Dashboard, your team can update content anytime—no developer needed—and we handle all setup and ongoing support.\n\nIf you’re interested, I’d be happy to show you what we could do for Maddox Plumbing. You can reach me at nic@blacnova.net or (575) 270-1276.", "close_off": "Thanks again for all you do for the Las Cruces community!\n\nBest,\nNicholas", "website_status": "No website", "reason_for_contact": "Build a simple, modern, and easy-to-manage website" },
-                                     { "business": "L&L Janitorial", "subject": "A message for L&L Janitorial", "body": "Hi L&L Janitorial Team,\n\nFirst off, thank you for the work you do for the community.\n\nI’m reaching out from Blacnova (www.blacnova.net), a local business here in Las Cruces. I noticed your website is on Squarespace. We can offer a more modern, appealing website at a better price, and we’d even be happy to design a demo so you can see exactly how it would look before committing.\n\nBeing local, we provide personalized support and hands-on guidance—something a big platform like Squarespace can’t match. Your team can manage updates easily through our Blacnova Dashboard, and we handle all setup and ongoing support.\n\nIf you’re open, I’d love to show you what we can do for L&L Janitorial. You can reach me at nic@blacnova.net or (575) 270-1276.", "close_off": "Thanks for all you do for Las Cruces!\n\nBest,\nNicholas", "website_status": "Existing website", "reason_for_contact": "Website is outdated and on Squarespace; offer modern, more cost-effective redesign" },
-                                     { "business": "Dick’s Café", "subject": "A Brand-New Website for Dick’s Café", "body": "Hi Dick’s Café,\n\nFirst off, thank you for everything you do for the community. Your café is a historic and beloved part of Las Cruces, and it’s clear people really value it.\n\nI’m reaching out from Blacnova (www.blacnova.net), a local business here in Las Cruces. We noticed your current website is a bit outdated, and we’d love to help modernize it. We can build a demo website first so you can see exactly how it would look before making any decisions. We can match your current website costs or, if that doesn’t work, we’re happy to negotiate a fair price—we’d just love the opportunity to have Dick’s Café as one of our clients.\n\nOur team provides personalized, local support, and with the Blacnova Dashboard, your team can easily manage updates anytime.\n\nIf you’re interested, I’d be happy to show you what we can do. You can reach me at nic@blacnova.net or (575) 270-1276.", "close_off": "Thanks again for all you do for Las Cruces!\n\nBest,\nNicholas", "website_status": "Existing website", "reason_for_contact": "Website is outdated; offer modern redesign and demo" },
-                                     { "business": "Café de Mesilla", "subject": "New Website for Café de Mesilla", "body": "Hi Café de Mesilla Team,\n\nI’m reaching out from Blacnova (www.blacnova.net). We noticed your current website is a bit hard to navigate and could use a modern refresh. We’d love to build a demo website so you can see exactly how a more user-friendly, visually appealing site could look before making any commitments.\n\nWith our Blacnova Dashboard, your team can easily update menus, hours, and specials anytime, and we provide full support along the way. Our goal is to make your online presence as welcoming and professional as your café itself.\n\nIf you’re interested, I’d be happy to show you what we can do. You can reach me at nic@blacnova.net or (575) 270-1276.", "close_off": "Thanks again for all you do for Mesilla!\n\nBest,\nNicholas", "website_status": "Existing website", "reason_for_contact": "Website is hard to navigate; offer more user-friendly, modern site" }
-                                 ]
-                             };
-         
-                             const systemPrompt = `You are an expert copywriter for Blacnova (www.blacnova.net), a web development agency in Las Cruces, NM. Your task is to generate a single, concise, professional, and friendly outreach email object within a JSON structure. The output MUST be a valid JSON object matching this schema and contain only one message in the array: 
-                             { "outreach_messages": [ { "business": "string", "subject": "string", "body": "string", "close_off": "string", "website_status": "string", "reason_for_contact": "string" } ] }
-                             Base your response on the following examples for tone and content: ${JSON.stringify(emailExamples, null, 2)}
-                             Only return the raw JSON object and nothing else.`;
-                             
-                             const userQuery = `Generate one outreach message for:\nBusiness Name: ${businessName}\nWebsite Status: ${websiteStatus}\nPrimary Reason for Contact: ${reason || 'Not provided'}`;
-                             
-                             let emailData;
-         
-                             try {
-                                  const openRouterPayload = { 
-                                     model: "deepseek/deepseek-chat-v3.1:free", // Primary Model
-                                     messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userQuery }],
-                                  };
-                                 const response = await fetch(openRouter.apiUrl, {
-                                     method: 'POST',
-                                     headers: { 
-                                         'Authorization': `Bearer ${openRouter.apiKey}`, 
-                                         'Content-Type': 'application/json',
-                                         'HTTP-Referer': 'https://blacnova.net',
-                                         'X-Title': 'Blacnova Reacher AI'
-                                     },
-                                     body: JSON.stringify(openRouterPayload)
-                                 });
-         
-                                 if (!response.ok) {
-                                     const errorBody = await response.text();
-                                     throw new Error(`OpenRouter API Error (${response.status}): ${errorBody}`);
-                                 }
-         
-                                 const result = await response.json();
-                                 const rawContent = result.choices[0].message.content;
-                                 const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
-                                  if (!jsonMatch) {
-                                     throw new Error("OpenRouter did not return a valid JSON object in its response.");
-                                 }
-         
-                                 const parsedResult = JSON.parse(jsonMatch[0]);
-                                  if (!parsedResult.outreach_messages || parsedResult.outreach_messages.length === 0) {
-                                     throw new Error("OpenRouter returned invalid JSON structure.");
-                                 }
-                                 emailData = parsedResult.outreach_messages[0];
-         
-                             } catch (error) {
-                                 console.error("OpenRouter Error, trying Perplexity:", error);
-                                 try {
-                                     const perplexityPayload = { 
-                                         model: "llama-3-sonar-large-32k-online", 
-                                         messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userQuery }]
-                                     };
-                                     const response = await fetch(perplexity.apiUrl, {
-                                         method: 'POST',
-                                         headers: { 'Authorization': `Bearer ${perplexity.apiKey}`, 'Content-Type': 'application/json' },
-                                         body: JSON.stringify(perplexityPayload)
-                                     });
-         
-                                      if (!response.ok) {
-                                         const errorBody = await response.text();
-                                         throw new Error(`Perplexity API Error (${response.status}): ${errorBody}`);
-                                     }
-         
-                                     const result = await response.json();
-                                     const rawContent = result.choices[0].message.content;
-                                     
-                                     const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
-                                     if (!jsonMatch) {
-                                         throw new Error("Perplexity did not return a valid JSON object in its response.");
-                                     }
-                                     
-                                     const parsedResult = JSON.parse(jsonMatch[0]);
-                                      if (!parsedResult.outreach_messages || parsedResult.outreach_messages.length === 0) {
-                                         throw new Error("Perplexity returned invalid JSON structure.");
-                                     }
-                                     emailData = parsedResult.outreach_messages[0];
-         
-                                 } catch (fallbackError) {
-                                     console.error("Fallback API Error (Perplexity):", fallbackError);
-                                     showToast("Failed to generate email from all sources. Please check API keys and model availability.", "error");
-                                     btnText.classList.remove('hidden');
-                                     loader.classList.add('hidden');
-                                     generateBtn.disabled = false;
-                                     return;
-                                 }
-                             }
-         
-                             document.getElementById('output-subject').value = emailData.subject;
-                             document.getElementById('output-body').value = `${emailData.body}\n\n${emailData.close_off}`;
-                             document.getElementById('output-container').classList.remove('hidden');
-                             document.getElementById('placeholder-output').classList.add('hidden');
-                             document.getElementById('save-outreach-btn').disabled = false;
-                             document.getElementById('send-outreach-btn').disabled = !isZohoConnected;
-                             currentGeneratedEmail = emailData;
-         
-                             btnText.classList.remove('hidden');
-                             loader.classList.add('hidden');
-                             generateBtn.disabled = false;
-                         }
-         
+                        async function generateEmailWithAi() {
+                            const businessName = document.getElementById('business-name').value;
+                            const websiteStatus = document.getElementById('website-status').value;
+                            const reason = document.getElementById('reason').value;
+
+                            if (!businessName) {
+                                showToast("Please enter a business name.", "error");
+                                return;
+                            }
+
+                            const btnText = generateBtn.querySelector('.btn-text');
+                            const loader = generateBtn.querySelector('.loader');
+                            btnText.classList.add('hidden');
+                            loader.classList.remove('hidden');
+                            generateBtn.disabled = true;
+
+                            try {
+                                const response = await fetch('generate-email.php', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ businessName, websiteStatus, reason })
+                                });
+
+                                if (!response.ok) {
+                                    const errorResult = await response.json();
+                                    throw new Error(errorResult.error || `HTTP error! status: ${response.status}`);
+                                }
+
+                                const emailData = await response.json();
+
+                                document.getElementById('output-subject').value = emailData.subject;
+                                document.getElementById('output-body').value = `${emailData.body}\n\n${emailData.close_off}`;
+                                document.getElementById('output-container').classList.remove('hidden');
+                                document.getElementById('placeholder-output').classList.add('hidden');
+                                document.getElementById('save-outreach-btn').disabled = false;
+                                document.getElementById('send-outreach-btn').disabled = !isZohoConnected;
+                                currentGeneratedEmail = emailData;
+
+                            } catch (error) {
+                                console.error("AI Generation Error:", error);
+                                showToast(error.message || "Failed to generate email content.", "error");
+                            } finally {
+                                btnText.classList.remove('hidden');
+                                loader.classList.add('hidden');
+                                generateBtn.disabled = false;
+                            }
+                        }
+
                          const sendBtn = document.getElementById('send-outreach-btn');
                          const saveBtn = document.getElementById('save-outreach-btn');
          
@@ -746,34 +666,52 @@
                          saveBtn.addEventListener('click', () => logOutreach('manual'));
                          
                          async function sendEmailWithZoho() {
-                             if (!currentGeneratedEmail) return;
-         
-                             const btnText = sendBtn.querySelector('.btn-text');
-                             const loader = sendBtn.querySelector('.loader');
-                             btnText.classList.add('hidden');
-                             loader.classList.remove('hidden');
-                             sendBtn.disabled = true;
-         
-                             try {
-                                 showToast("This is a demo. Email sending requires a backend.", 'error');
-                                 logOutreach('sent');
-                             } catch (error) {
-                                 showToast(error.message, 'error');
-                                 console.error("Error sending email:", error);
-                             } finally {
-                                 btnText.classList.remove('hidden');
-                                 loader.classList.add('hidden');
-                                 sendBtn.disabled = false;
-                             }
-                         }
+                            if (!currentGeneratedEmail) return;
+
+                            const btnText = sendBtn.querySelector('.btn-text');
+                            const loader = sendBtn.querySelector('.loader');
+                            btnText.classList.add('hidden');
+                            loader.classList.remove('hidden');
+                            sendBtn.disabled = true;
+
+                            try {
+                                const response = await fetch('send-email.php', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        recipient_email: document.getElementById('recipient-email').value,
+                                        subject: document.getElementById('output-subject').value,
+                                        body: document.getElementById('output-body').value
+                                    })
+                                });
+
+                                const result = await response.json();
+
+                                if (result.success) {
+                                    showToast(result.message, 'success');
+                                    logOutreach('sent'); // Log it as sent
+                                } else {
+                                    showToast(result.message || 'Failed to send email.', 'error');
+                                }
+
+                            } catch (error) {
+                                showToast('An error occurred while sending the email.', 'error');
+                                console.error("Error sending email:", error);
+                            } finally {
+                                btnText.classList.remove('hidden');
+                                loader.classList.add('hidden');
+                                sendBtn.disabled = false;
+                            }
+                        }
          
                          function logOutreach(status) {
                              if (!currentGeneratedEmail) return;
                              
                              const logEntry = {
                                  ...currentGeneratedEmail,
+                                 recipient_email: document.getElementById('recipient-email').value,
                                  subject: document.getElementById('output-subject').value,
-                                 body: document.getElementById('output-body').value, // This now includes the close_off
+                                 body: document.getElementById('output-body').value, 
                                  date: new Date().toISOString().split('T')[0],
                                  status: status
                              };
@@ -782,7 +720,6 @@
                              log.unshift(logEntry);
                              localStorage.setItem('outreachLog', JSON.stringify(log));
          
-                             // Ensure table is visible and placeholder is hidden
                              document.getElementById('log-table-container').classList.remove('hidden');
                              document.getElementById('empty-log-placeholder').classList.add('hidden');
          
@@ -832,21 +769,11 @@
                          }
          
                          function checkZohoStatus() {
-                              const status = localStorage.getItem('zoho_auth_status');
                               const statusContainer = document.getElementById('zoho-status');
-                              if (status === 'connected') {
-                                  isZohoConnected = true;
-                                  statusContainer.innerHTML = `<p class="text-green-400 mb-4 flex items-center"><i class="fas fa-check-circle mr-2"></i>Zoho Mail is connected.</p><button id="disconnect-zoho-btn" class="btn-secondary px-5 py-3 text-sm">Disconnect</button>`;
-                                  document.getElementById('disconnect-zoho-btn').addEventListener('click', () => {
-                                      localStorage.removeItem('zoho_auth_status');
-                                      isZohoConnected = false; checkZohoStatus(); showToast('Zoho disconnected.');
-                                  });
+                              if (isZohoConnected) {
+                                  statusContainer.innerHTML = `<p class="text-green-400 mb-4 flex items-center"><i class="fas fa-check-circle mr-2"></i>Zoho Mail is connected.</p><button id="disconnect-zoho-btn" class="btn-secondary px-5 py-3 text-sm">Disconnect (Not Implemented)</button>`;
                               } else {
-                                  isZohoConnected = false;
-                                  statusContainer.innerHTML = `<p class="text-text-secondary mb-4">Connect your Zoho Mail account to send outreach emails directly from this panel.</p><button id="connect-zoho-btn" class="btn-primary px-5 py-3">Connect to Zoho</button>`;
-                                  document.getElementById('connect-zoho-btn').addEventListener('click', () => {
-                                      showToast("This is a demo. Zoho connection requires a backend.", "error");
-                                  });
+                                  statusContainer.innerHTML = `<p class="text-text-secondary mb-4">Connect your Zoho Mail account to send outreach emails directly from this panel.</p><a href="zoho-oauth.php" id="connect-zoho-btn" class="btn-primary px-5 py-3 text-center inline-block">Connect to Zoho</a>`;
                               }
                          }
                          
@@ -854,37 +781,54 @@
                          loadOutreachLog();
                      }
          
-                     function handleLogin(event) {
-                         event.preventDefault();
-                         const usernameInput = document.getElementById('username');
-                         const passcodeİnput = document.getElementById('passcode');
-                         const username = usernameInput.value;
-                         const passcode = passcodeİnput.value;
-         
-                         if (username.toLowerCase() === 'nic@blacnova.net' && passcode === '2900') {
-                             sessionStorage.setItem('isAuthenticated', 'true');
-                             authOverlay.style.transition = 'opacity 0.5s ease-out';
-                             authOverlay.style.opacity = '0';
-                             setTimeout(() => {
-                                 authOverlay.style.display = 'none';
-                                 initializeApp();
-                             }, 500);
-                         } else {
-                             authError.classList.remove('hidden');
-                             authModal.classList.add('shake');
-                             usernameInput.value = '';
-                             passcodeİnput.value = '';
-                             setTimeout(() => { authModal.classList.remove('shake'); }, 820);
-                         }
-                     }
-         
-                     if (sessionStorage.getItem('isAuthenticated') === 'true') {
+                     async function handleLogin(event) {
+                        event.preventDefault();
+                        const usernameInput = document.getElementById('username');
+                        const passcodeİnput = document.getElementById('passcode');
+                        const username = usernameInput.value;
+                        const passcode = passcodeİnput.value;
+                        authError.classList.add('hidden');
+
+                        try {
+                            const response = await fetch('../auth.php', { // Note the path is now ../auth.php
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ username, passcode })
+                            });
+                            const result = await response.json();
+
+                            if (result.success) {
+                                authOverlay.style.transition = 'opacity 0.5s ease-out';
+                                authOverlay.style.opacity = '0';
+                                setTimeout(() => {
+                                    authOverlay.style.display = 'none';
+                                    initializeApp();
+                                }, 500);
+                            } else {
+                                authError.textContent = result.message || 'Invalid credentials. Please try again.';
+                                authError.classList.remove('hidden');
+                                authModal.classList.add('shake');
+                                usernameInput.value = '';
+                                passcodeİnput.value = '';
+                                setTimeout(() => { authModal.classList.remove('shake'); }, 820);
+                            }
+                        } catch (error) {
+                            console.error('Login request failed:', error);
+                            authError.textContent = 'An error occurred. Please try again later.';
+                            authError.classList.remove('hidden');
+                        }
+                    }
+
+                    // Authentication Check from PHP session
+                    const isAuthenticated = <?php echo json_encode(isset($_SESSION['isAuthenticated']) && $_SESSION['isAuthenticated']); ?>;
+
+                    if (isAuthenticated) {
                          authOverlay.style.display = 'none';
                          initializeApp();
-                     } else {
+                    } else {
                          authOverlay.style.display = 'flex';
                          loginForm.addEventListener('submit', handleLogin);
-                     }
+                    }
                  });
              
       </script>
