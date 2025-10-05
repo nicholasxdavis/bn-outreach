@@ -42,11 +42,12 @@ function refresh_zoho_token($pdo, $user_id, $refresh_token) {
     if (isset($new_token_data['access_token'])) {
         // Update the new token in the database
         $stmt = $pdo->prepare(
-            'UPDATE zoho_tokens SET access_token = ?, expires_in = ?, created_at = NOW() WHERE user_id = ?'
+            'UPDATE zoho_tokens SET access_token = ?, expires_in = ?, created_at = ? WHERE user_id = ?'
         );
         $stmt->execute([
             $new_token_data['access_token'],
             $new_token_data['expires_in'],
+            time(), // Use the current Unix timestamp
             $user_id
         ]);
         return $new_token_data['access_token'];
