@@ -1,3 +1,4 @@
+<?php require_once 'config.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
    <head>
@@ -313,7 +314,7 @@
                   <div class="flex items-center space-x-4">
                      <div id="stats-counter" class="text-sm text-gray-400 hidden md:block">
                      </div>
-                     <a href="outreach/index.html" class="text-gray-400 hover:text-white transition-colors duration-200 text-sm sm:text-base">Outreach Tool</a>
+                     <a href="outreach/index.php" class="text-gray-400 hover:text-white transition-colors duration-200 text-sm sm:text-base">Outreach Tool</a>
                      <button id="theme-toggle-btn" class="text-gray-400 hover:text-white transition-colors duration-200">
                      <i class="fas fa-moon text-lg"></i>
                      </button>
@@ -910,34 +911,48 @@
                fetchData();
             }
             
-            function handleLogin(event) {
-               event.preventDefault();
-               const usernameInput = document.getElementById('username');
-               const passcodeİnput = document.getElementById('passcode');
-               const username = usernameInput.value;
-               const passcode = passcodeİnput.value;
-            
-               if (username.toLowerCase() === 'nic@blacnova.net' && passcode === '2900') {
-                  sessionStorage.setItem('isAuthenticated', 'true');
-                  authOverlay.style.transition = 'opacity 0.5s ease-out';
-                  authOverlay.style.opacity = '0';
-                  setTimeout(() => {
-                     authOverlay.style.display = 'none';
-                     initializeApp();
-                  }, 500);
-               } else {
-                  authError.classList.remove('hidden');
-                  authModal.classList.add('shake');
-                  usernameInput.value = '';
-                  passcodeİnput.value = '';
-                  setTimeout(() => {
-                     authModal.classList.remove('shake');
-                  }, 820);
-               }
+            async function handleLogin(event) {
+                event.preventDefault();
+                const usernameInput = document.getElementById('username');
+                const passcodeİnput = document.getElementById('passcode');
+                const username = usernameInput.value;
+                const passcode = passcodeİnput.value;
+                authError.classList.add('hidden'); // Hide previous errors
+
+                try {
+                    const response = await fetch('auth.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, passcode })
+                    });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        authOverlay.style.transition = 'opacity 0.5s ease-out';
+                        authOverlay.style.opacity = '0';
+                        setTimeout(() => {
+                            authOverlay.style.display = 'none';
+                            initializeApp();
+                        }, 500);
+                    } else {
+                        authError.textContent = result.message || 'Invalid credentials. Please try again.';
+                        authError.classList.remove('hidden');
+                        authModal.classList.add('shake');
+                        usernameInput.value = '';
+                        passcodeİnput.value = '';
+                        setTimeout(() => { authModal.classList.remove('shake'); }, 820);
+                    }
+                } catch (error) {
+                    console.error('Login request failed:', error);
+                    authError.textContent = 'An error occurred. Please try again later.';
+                    authError.classList.remove('hidden');
+                }
             }
-            
-            // Authentication Check
-            if (sessionStorage.getItem('isAuthenticated') === 'true') {
+
+            // Authentication Check from PHP session
+            const isAuthenticated = <?php echo json_encode(isset($_SESSION['isAuthenticated']) && $_SESSION['isAuthenticated']); ?>;
+
+            if (isAuthenticated) {
                authOverlay.style.display = 'none';
                initializeApp();
             } else {
