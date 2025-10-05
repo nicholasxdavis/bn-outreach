@@ -1,19 +1,17 @@
 <?php
-ini_set('display_errors', 0);
-error_reporting(0);
-// require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
-// This will load a .env file if it exists (for local development)
+// This loads a .env file if it exists (for local development)
 // but will NOT crash if it's missing (for production on Coolify).
-// $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-// $dotenv->safeLoad();
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->safeLoad();
 
-// Use getenv() to reliably read environment variables from BOTH .env and Coolify.
-// Coolify provides database credentials with the "MARIADB_" prefix when you link the service.
-$db_host = getenv('MARIADB_HOST') ?: getenv('DB_HOST') ?: 'localhost';
-$db_name = getenv('MARIADB_DATABASE') ?: getenv('DB_NAME') ?: 'outreach';
-$db_user = getenv('MARIADB_USER') ?: getenv('DB_USER') ?: 'root';
-$db_pass = getenv('MARIADB_PASSWORD') ?: getenv('DB_PASS') ?: '';
+// Use getenv() to reliably read the standard environment variables 
+// provided by the Coolify MariaDB service.
+$db_host = getenv('MARIADB_HOST');
+$db_name = getenv('MARIADB_DATABASE');
+$db_user = getenv('MARIADB_USER');
+$db_pass = getenv('MARIADB_PASSWORD');
 
 try {
     // This check is crucial. It will throw a clear error if the variables are missing.
@@ -42,4 +40,5 @@ define('ZOHO_REDIRECT_URI', 'http://' . $_SERVER['HTTP_HOST'] . '/Outreach/zoho-
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
+?>
 ?>
