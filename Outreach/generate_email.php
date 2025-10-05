@@ -13,9 +13,9 @@ if (!isset($_SESSION['isAuthenticated']) || $_SESSION['isAuthenticated'] !== tru
 }
 
 $input = json_decode(file_get_contents('php://input'), true);
-$businessName = $input['businessName'] ?? '';
-$websiteStatus = $input['websiteStatus'] ?? '';
-$reason = $input['reason'] ?? '';
+$businessName = htmlspecialchars($input['businessName'] ?? '', ENT_QUOTES, 'UTF-8');
+$websiteStatus = htmlspecialchars($input['websiteStatus'] ?? '', ENT_QUOTES, 'UTF-8');
+$reason = htmlspecialchars($input['reason'] ?? '', ENT_QUOTES, 'UTF-8');
 
 if (empty($businessName) || empty($websiteStatus)) {
     echo json_encode(['error' => 'Business name and website status are required.']);

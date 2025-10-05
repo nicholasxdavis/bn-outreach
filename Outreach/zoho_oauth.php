@@ -1,6 +1,11 @@
 <?php
 require_once '../config.php';
 
+if (!isset($_SESSION['isAuthenticated']) || !isset($_SESSION['user_id'])) {
+    header('Location: ../index.html');
+    exit();
+}
+
 if (!isset($_GET['code'])) {
     $authorization_url = "https://accounts.zoho.com/oauth/v2/auth?" . http_build_query([
         'scope' => 'ZohoMail.messages.CREATE',
@@ -11,8 +16,7 @@ if (!isset($_GET['code'])) {
     ]);
     header('Location: ' . $authorization_url);
     exit();
-}
-else {
+} else {
     $code = $_GET['code'];
     $token_url = "https://accounts.zoho.com/oauth/v2/token";
 
@@ -34,17 +38,30 @@ else {
 
     $token_data = json_decode($response, true);
 
-    if (isset($token_data['access_token'])) {
-        $_SESSION['zoho_access_token'] = $token_data['access_token'];
-
-        if (isset($token_data['refresh_token'])) {
-            // For production, encrypt and store this in your database.
-            $_SESSION['zoho_refresh_token'] = $token_data['refresh_token'];
+    if (isset($token_data['access_token']) && isset($token_data['refresh_token'])) {
+        try {
+            $stmt = $pdo->prepare(
+                'INSERT INTO zoho_tokens (user_id, access_token, refresh_token, expires_in) 
+                 VALUES (?, ?, ?, ?)
+                 ON DUPLICATE KEY UPDATE 
+                 access_token = VALUES(access_token), 
+                 refresh_token = VALUES(refresh_token), 
+                 expires_in = VALUES(expires_in)'
+            );
+            $stmt->execute([
+                $_SESSION['user_id'],
+                $token_data['access_token'],
+                $token_data['refresh_token'],
+                $token_data['expires_in']
+            ]);
+            $_SESSION['zoho_auth_status'] = 'connected';
+            header('Location: index.php?status=success');
+            exit();
+        } catch (PDOException $e) {
+            error_log("Zoho token storage error: " . $e->getMessage(), 3, "error.log");
+            header('Location: index.php?status=error&message=dberror');
+            exit();
         }
-
-        $_SESSION['zoho_auth_status'] = 'connected';
-        header('Location: index.php?status=success');
-        exit();
     } else {
         header('Location: index.php?status=error&message=' . urlencode($token_data['error']));
         exit();

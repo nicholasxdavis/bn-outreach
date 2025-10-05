@@ -663,7 +663,14 @@
                   // Update mobile counter with just the total number of businesses for a concise display
                   mobileStatsCounter.textContent = `${total} Total Businesses`;
                }
-            
+               
+               // Function to escape HTML to prevent XSS
+                function escapeHTML(str) {
+                    const p = document.createElement('p');
+                    p.textContent = str;
+                    return p.innerHTML;
+                }
+
                function createBusinessCard(business) {
                   const id = getBusinessId(business);
                   const state = businessStates[id] || {};
@@ -678,12 +685,12 @@
                               <div class="p-5 flex-grow">
                                  <div class="flex justify-between items-start gap-2">
                                     <div class="flex-1 min-w-0">
-                                       <h3 class="text-lg font-bold text-white mb-1 leading-tight">${business.name}</h3>
+                                       <h3 class="text-lg font-bold text-white mb-1 leading-tight">${escapeHTML(business.name)}</h3>
                                     </div>
-                                    ${business.industry ? `<span class="flex-shrink-0 text-right bg-orange-600/20 text-orange-600 text-xs font-semibold px-2 py-1 rounded-full">${business.industry}</span>` : ''}
+                                    ${business.industry ? `<span class="flex-shrink-0 text-right bg-orange-600/20 text-orange-600 text-xs font-semibold px-2 py-1 rounded-full">${escapeHTML(business.industry)}</span>` : ''}
                                  </div>
-                                 <p class="text-sm text-gray-400 mb-2">${business.address || 'Address not available'}</p>
-                                 ${business.email ? `<p class="text-sm text-orange-600 truncate mb-4">${business.email}</p>` : `<div class="mb-4 h-5"></div>`}
+                                 <p class="text-sm text-gray-400 mb-2">${escapeHTML(business.address || 'Address not available')}</p>
+                                 ${business.email ? `<p class="text-sm text-orange-600 truncate mb-4">${escapeHTML(business.email)}</p>` : `<div class="mb-4 h-5"></div>`}
             
                                  <div class="flex items-center space-x-3 mb-5">
                                     <a href="https://www.google.com/search?q=${encodeURIComponent(business.name + ' Las Cruces New Mexico')}" target="_blank" class="flex-1 text-center bg-[#1a1a1a] text-orange-600 hover:bg-[#2a2a2a] border border-gray-700 text-sm py-2 px-3 rounded-lg transition"><i class="fab fa-google mr-2"></i>Google</a>
@@ -728,7 +735,7 @@
                                     </button>
                                  </div>
                                  <div class="notes-container">
-                                    <textarea class="notes-textarea w-full bg-[#1a1a1a] border border-gray-700 rounded-lg p-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary transition" rows="3" placeholder="Add a note...">${state.notes || ''}</textarea>
+                                    <textarea class="notes-textarea w-full bg-[#1a1a1a] border border-gray-700 rounded-lg p-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary transition" rows="3" placeholder="Add a note...">${escapeHTML(state.notes || '')}</textarea>
                                     <button class="save-note-btn mt-2 w-full text-center bg-primary/80 hover:bg-primary text-white text-xs py-1 px-3 rounded-md transition">Save Note</button>
                                  </div>
                               </div>

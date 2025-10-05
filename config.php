@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
 
+// IMPORTANT: In a production environment, you should move your .env file
+// outside of the public web directory for security reasons.
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
@@ -14,8 +16,10 @@ try {
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    // In production, you would log this error and show a generic message.
-    die("Could not connect to the database: " . $e->getMessage());
+    // Log the error to a file instead of displaying it to the user.
+    error_log("Database connection failed: " . $e->getMessage(), 3, "error.log");
+    // Show a generic error message to the user.
+    die("A server error occurred. Please try again later.");
 }
 
 

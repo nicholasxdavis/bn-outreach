@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $response['message'] = 'Invalid username or passcode.';
             }
         } catch (PDOException $e) {
-            // In production, log this error.
+            error_log("Authentication error: " . $e->getMessage(), 3, "error.log");
             $response['message'] = 'A server error occurred. Please try again later.';
         }
     }

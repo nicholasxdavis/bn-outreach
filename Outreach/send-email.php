@@ -20,9 +20,16 @@ if (!isset($_SESSION['zoho_access_token'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = json_decode(file_get_contents('php://input'), true);
 
-    $recipientEmail = $data['recipient_email'] ?? '';
-    $subject = $data['subject'] ?? '';
-    $body = $data['body'] ?? '';
+    $recipientEmail = filter_var($data['recipient_email'] ?? '', FILTER_SANITIZE_EMAIL);
+    if (!filter_var($recipientEmail, FILTER_VALIDATE_EMAIL)) {
+        $response['message'] = 'Invalid recipient email address.';
+        header('Content-Type: application/json', true, 400);
+        echo json_encode($response);
+        exit();
+    }
+    
+    $subject = htmlspecialchars($data['subject'] ?? '', ENT_QUOTES, 'UTF-8');
+    $body = htmlspecialchars($data['body'] ?? '', ENT_QUOTES, 'UTF-8');
 
     $accounts_url = "https://mail.zoho.com/api/accounts";
     $ch_accounts = curl_init();
