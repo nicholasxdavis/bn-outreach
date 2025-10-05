@@ -1,30 +1,37 @@
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
 
-// IMPORTANT: In a production environment, you should move your .env file
-// outside of the public web directory for security reasons.
+// Load .env file for local development, but don't crash if it's missing (for production)
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->safeLoad(); // Use safeLoad() instead of load()
+$dotenv->safeLoad();
 
-$db_host = $_ENV['DB_HOST'];
-$db_name = $_ENV['DB_NAME'];
-$db_user = $_ENV['DB_USER'];
-$db_pass = $_ENV['DB_PASS'];
+// Use getenv() to reliably read environment variables from both .env and Coolify
+$db_host = getenv('DB_HOST');
+$db_name = getenv('DB_NAME');
+$db_user = getenv('DB_USER');
+$db_pass = getenv('DB_PASS');
 
 try {
+    // Check if the variables were loaded correctly
+    if (!$db_host || !$db_name || !$db_user || !$db_pass) {
+        throw new Exception("Database credentials are not fully configured.");
+    }
+    
     $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    // Log the error to a file instead of displaying it to the user.
-    error_log("Database connection failed: " . $e->getMessage(), 3, "error.log");
-    // Show a generic error message to the user.
-    die("A server error occurred. Please try again later.");
+
+} catch (Exception $e) {
+    // Log to stderr for containerized environments like Coolify
+    error_log("Configuration or Connection Error: " . $e->getMessage()); 
+    // Show a generic error message to the user
+    http_response_code(500);
+    die("A server error occurred. Please check the application logs for more details.");
 }
 
-
-define('ZOHO_CLIENT_ID', $_ENV['ZOHO_CLIENT_ID']);
-define('ZOHO_CLIENT_SECRET', $_ENV['ZOHO_CLIENT_SECRET']);
+// Use getenv() for other environment variables as well
+define('ZOHO_CLIENT_ID', getenv('ZOHO_CLIENT_ID'));
+define('ZOHO_CLIENT_SECRET', getenv('ZOHO_CLIENT_SECRET'));
 define('ZOHO_REDIRECT_URI', 'http://' . $_SERVER['HTTP_HOST'] . '/Outreach/zoho-oauth.php');
 
 if (session_status() == PHP_SESSION_NONE) {
