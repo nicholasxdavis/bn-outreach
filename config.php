@@ -1,11 +1,11 @@
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
 
-// Load .env file for local development, but don't crash if it's missing (for production)
+// This loads the .env file for local development but won't crash in production
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->safeLoad();
 
-// Use getenv() to read environment variables provided by Coolify for its database service
+// Use getenv() with the CORRECT variable names provided by the Coolify MariaDB service
 $db_host = getenv('MARIADB_HOST');
 $db_name = getenv('MARIADB_DATABASE');
 $db_user = getenv('MARIADB_USER');
@@ -22,14 +22,13 @@ try {
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 
 } catch (Exception $e) {
-    // Log to stderr for containerized environments like Coolify
+    // Log errors to the standard error stream for Coolify to capture
     error_log("Configuration or Connection Error: " . $e->getMessage()); 
-    // Show a generic error message to the user
     http_response_code(500);
     die("A server error occurred. Please check the application logs for more details.");
 }
 
-// Use getenv() for other environment variables as well
+// Use getenv() for your other secrets as well
 define('ZOHO_CLIENT_ID', getenv('ZOHO_CLIENT_ID'));
 define('ZOHO_CLIENT_SECRET', getenv('ZOHO_CLIENT_SECRET'));
 define('ZOHO_REDIRECT_URI', 'http://' . $_SERVER['HTTP_HOST'] . '/Outreach/zoho-oauth.php');
