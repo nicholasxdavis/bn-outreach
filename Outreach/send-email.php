@@ -1,17 +1,20 @@
 <?php
 require_once '../config.php';
+require_once 'zoho_token_manager.php';
 
 $response = ['success' => false, 'message' => 'An unknown error occurred.'];
 
-if (!isset($_SESSION['isAuthenticated']) || $_SESSION['isAuthenticated'] !== true) {
+if (!isset($_SESSION['isAuthenticated']) || !isset($_SESSION['user_id'])) {
     $response['message'] = 'Authentication required.';
     header('Content-Type: application/json', true, 401);
     echo json_encode($response);
     exit();
 }
 
-if (!isset($_SESSION['zoho_access_token'])) {
-    $response['message'] = 'Zoho Mail account is not connected.';
+$access_token = get_zoho_access_token($pdo, $_SESSION['user_id']);
+
+if (!$access_token) {
+    $response['message'] = 'Zoho Mail account is not connected or the token is invalid.';
     header('Content-Type: application/json', true, 400);
     echo json_encode($response);
     exit();
@@ -35,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $ch_accounts = curl_init();
     curl_setopt($ch_accounts, CURLOPT_URL, $accounts_url);
     curl_setopt($ch_accounts, CURLOPT_HTTPHEADER, [
-        'Authorization: Zoho-oauthtoken ' . $_SESSION['zoho_access_token']
+        'Authorization: Zoho-oauthtoken ' . $access_token
     ]);
     curl_setopt($ch_accounts, CURLOPT_RETURNTRANSFER, true);
     $accounts_response = curl_exec($ch_accounts);
@@ -63,12 +66,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             curl_setopt($ch_send, CURLOPT_POST, 1);
             curl_setopt($ch_send, CURLOPT_POSTFIELDS, $email_payload);
             curl_setopt($ch_send, CURLOPT_HTTPHEADER, [
-                'Authorization: Zoho-oauthtoken ' . $_SESSION['zoho_access_token'],
+                'Authorization: Zoho-oauthtoken ' . $access_token,
                 'Content-Type: application/json'
             ]);
             curl_setopt($ch_send, CURLOPT_RETURNTRANSFER, true);
             $send_response_body = curl_exec($ch_send);
-            $send_http__code = curl_getinfo($ch_send, CURLINFO_HTTP_CODE);
+            $send_http_code = curl_getinfo($ch_send, CURLINFO_HTTP_CODE);
             curl_close($ch_send);
 
             if ($send_http_code == 200) {

@@ -41,18 +41,20 @@ if (!isset($_GET['code'])) {
     if (isset($token_data['access_token']) && isset($token_data['refresh_token'])) {
         try {
             $stmt = $pdo->prepare(
-                'INSERT INTO zoho_tokens (user_id, access_token, refresh_token, expires_in) 
-                 VALUES (?, ?, ?, ?)
+                'INSERT INTO zoho_tokens (user_id, access_token, refresh_token, expires_in, created_at) 
+                 VALUES (?, ?, ?, ?, ?)
                  ON DUPLICATE KEY UPDATE 
                  access_token = VALUES(access_token), 
                  refresh_token = VALUES(refresh_token), 
-                 expires_in = VALUES(expires_in)'
+                 expires_in = VALUES(expires_in),
+                 created_at = VALUES(created_at)'
             );
             $stmt->execute([
                 $_SESSION['user_id'],
                 $token_data['access_token'],
                 $token_data['refresh_token'],
-                $token_data['expires_in']
+                $token_data['expires_in'],
+                time() // Store the current timestamp
             ]);
             $_SESSION['zoho_auth_status'] = 'connected';
             header('Location: index.php?status=success');

@@ -26,12 +26,24 @@ try {
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS `zoho_tokens` (
           `id` INT AUTO_INCREMENT PRIMARY KEY,
-          `user_id` INT NOT NULL,
+          `user_id` INT NOT NULL UNIQUE,
           `access_token` TEXT NOT NULL,
           `refresh_token` TEXT NOT NULL,
           `expires_in` INT NOT NULL,
-          `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          `created_at` INT NOT NULL,
           FOREIGN KEY (user_id) REFERENCES users(id)
+        );"
+    );
+
+    // Create business_states table
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS `business_states` (
+            `id` INT AUTO_INCREMENT PRIMARY KEY,
+            `user_id` INT NOT NULL,
+            `business_id` VARCHAR(255) NOT NULL,
+            `state_json` JSON NOT NULL,
+            UNIQUE KEY `user_business` (`user_id`, `business_id`),
+            FOREIGN KEY (user_id) REFERENCES users(id)
         );"
     );
 
