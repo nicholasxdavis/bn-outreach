@@ -11,9 +11,16 @@ if (!isset($_SESSION['isAuthenticated']) || !isset($_SESSION['user_id'])) {
 }
 
 // Log environment variables for debugging (without exposing secrets)
-error_log("Zoho OAuth: Client ID is " . (ZOHO_CLIENT_ID ? 'SET' : 'NOT SET'));
-error_log("Zoho OAuth: Client Secret is " . (ZOHO_CLIENT_SECRET ? 'SET' : 'NOT SET'));
+error_log("Zoho OAuth: Client ID is " . (ZOHO_CLIENT_ID ? 'SET (length: ' . strlen(ZOHO_CLIENT_ID) . ')' : 'NOT SET'));
+error_log("Zoho OAuth: Client Secret is " . (ZOHO_CLIENT_SECRET ? 'SET (length: ' . strlen(ZOHO_CLIENT_SECRET) . ')' : 'NOT SET'));
 error_log("Zoho OAuth: Redirect URI is " . ZOHO_REDIRECT_URI);
+
+// Check if credentials are actually set
+if (!ZOHO_CLIENT_ID || !ZOHO_CLIENT_SECRET) {
+    error_log("Zoho OAuth: CRITICAL - Missing Zoho credentials!");
+    header('Location: index.php?status=error&message=' . urlencode('Zoho credentials not configured. Check ZOHO_CLIENT_ID and ZOHO_CLIENT_SECRET environment variables.'));
+    exit();
+}
 
 if (!isset($_GET['code'])) {
     error_log("Zoho OAuth: No authorization code, redirecting to Zoho for authorization");
@@ -67,6 +74,9 @@ if (!isset($_GET['code'])) {
 
     $token_data = json_decode($response, true);
 
+    // Log the full decoded response for debugging
+    error_log("Zoho OAuth: Decoded token data: " . print_r($token_data, true));
+
     if (isset($token_data['access_token']) && isset($token_data['refresh_token'])) {
         error_log("Zoho OAuth: Successfully received tokens, storing in database");
         try {
@@ -105,8 +115,36 @@ if (!isset($_GET['code'])) {
         }
     } else {
         error_log("Zoho OAuth: Token exchange failed. Response: " . $response);
+
+        // Check if response is empty or null
+        if (empty($response)) {
+            error_log("Zoho OAuth Error: Empty response from Zoho API");
+            header('Location: index.php?status=error&message=' . urlencode('Empty response from Zoho. Check your credentials and network connection.'));
+            exit();
+        }
+
+        // Check if JSON decode failed
+        if ($token_data === null && json_last_error() !== JSON_ERROR_NONE) {
+            error_log("Zoho OAuth Error: JSON decode failed - " . json_last_error_msg());
+            header('Location: index.php?status=error&message=' . urlencode('Invalid response format from Zoho: ' . json_last_error_msg()));
+            exit();
+        }
+
         $error_message = isset($token_data['error']) ? $token_data['error'] : 'unknown_error';
         $error_description = isset($token_data['error_description']) ? $token_data['error_description'] : 'No description provided';
+
+        // Check for common Zoho error scenarios
+        if ($http_code == 400) {
+            error_log("Zoho OAuth Error: Bad Request (400) - likely invalid credentials or redirect URI mismatch");
+            $error_description = "Bad Request - Check your Zoho Client ID, Secret, and Redirect URI configuration";
+        } elseif ($http_code == 401) {
+            error_log("Zoho OAuth Error: Unauthorized (401) - invalid client credentials");
+            $error_description = "Unauthorized - Your Zoho Client ID or Secret is invalid";
+        } elseif ($http_code == 0) {
+            error_log("Zoho OAuth Error: No response (0) - network or SSL issue");
+            $error_description = "Network error - Unable to connect to Zoho servers";
+        }
+
         error_log("Zoho OAuth Error: $error_message - $error_description");
         header('Location: index.php?status=error&message=' . urlencode($error_message . ': ' . $error_description));
         exit();
