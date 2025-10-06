@@ -3,10 +3,20 @@ require_once '../config.php';
 
 // Log the start of OAuth process
 error_log("Zoho OAuth process started");
+error_log("Zoho OAuth: GET parameters: " . print_r($_GET, true));
 
 if (!isset($_SESSION['isAuthenticated']) || !isset($_SESSION['user_id'])) {
     error_log("Zoho OAuth: User not authenticated, redirecting to index.html");
     header('Location: ../index.html');
+    exit();
+}
+
+// Check if Zoho returned an error during authorization
+if (isset($_GET['error'])) {
+    $error = $_GET['error'];
+    $error_description = isset($_GET['error_description']) ? $_GET['error_description'] : 'No description provided';
+    error_log("Zoho OAuth: Authorization error from Zoho - $error: $error_description");
+    header('Location: index.php?status=error&message=' . urlencode("Authorization failed: $error - $error_description"));
     exit();
 }
 
