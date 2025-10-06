@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blacnova | Business Index</title>
-    <link rel="icon" href="https://www.blacnova.net/img/bn_orange.png" type="image/png">
+    <link rel="icon" href="https://nicholasxdavis.github.io/BN-db1/img/logo_dark.png" type="image/png">
     <style>
         body, html {
             margin: 0;
@@ -98,4 +98,5 @@
     </script>
 
 </body>
+
 </html>
