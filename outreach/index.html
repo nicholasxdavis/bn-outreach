@@ -604,8 +604,27 @@
          
                          // --- APP LOGIC ---
                          let currentGeneratedEmail = null;
-                         let isZohoConnected = <?php echo json_encode(isset($_SESSION['zoho_auth_status']) && $_SESSION['zoho_auth_status'] === 'connected'); ?>;
-                         
+                         let isZohoConnected = false;
+
+                         // Check Zoho connection status dynamically
+                         async function updateZohoConnectionStatus() {
+                             try {
+                                 const response = await fetch('check_zoho_status.php');
+                                 const data = await response.json();
+                                 isZohoConnected = data.connected;
+
+                                 if (data.expired) {
+                                     console.warn('Zoho token is expired, will need refresh');
+                                 }
+
+                                 checkZohoStatus();
+                             } catch (error) {
+                                 console.error('Failed to check Zoho status:', error);
+                                 isZohoConnected = false;
+                                 checkZohoStatus();
+                             }
+                         }
+
                          const navTabs = document.getElementById('nav-tabs');
                          const pages = document.querySelectorAll('.page');
                          navTabs.addEventListener('click', (e) => {
@@ -866,6 +885,9 @@
                          checkZohoStatus();
                          loadOutreachLog();
 
+                         // Update Zoho connection status on page load
+                         updateZohoConnectionStatus();
+
                          // Check for Zoho OAuth status messages
                          const urlParams = new URLSearchParams(window.location.search);
                          const status = urlParams.get('status');
@@ -874,18 +896,20 @@
                          if (status === 'success') {
                              showToast('Zoho Mail connected successfully!', 'success');
                              isZohoConnected = true;
-                             checkZohoStatus(); // Refresh the UI
+                             updateZohoConnectionStatus(); // Refresh the status
                              // Clean up URL
                              window.history.replaceState({}, document.title, window.location.pathname);
                          } else if (status === 'disconnected') {
                              showToast('Zoho Mail disconnected successfully.', 'success');
                              isZohoConnected = false;
-                             checkZohoStatus(); // Refresh the UI
+                             updateZohoConnectionStatus(); // Refresh the status
                              // Clean up URL
                              window.history.replaceState({}, document.title, window.location.pathname);
                          } else if (status === 'error') {
                              const errorMsg = message ? decodeURIComponent(message) : 'Failed to connect Zoho Mail';
                              showToast('Zoho connection failed: ' + errorMsg, 'error');
+                             isZohoConnected = false;
+                             updateZohoConnectionStatus(); // Refresh the status
                              // Clean up URL
                              window.history.replaceState({}, document.title, window.location.pathname);
                          }

@@ -33,6 +33,15 @@ if (!ZOHO_CLIENT_ID || !ZOHO_CLIENT_SECRET) {
 }
 
 if (!isset($_GET['code'])) {
+    // Before redirecting to Zoho, clear any existing tokens for this user
+    // This prevents conflicts with old/expired tokens
+    try {
+        $stmt = $pdo->prepare('DELETE FROM zoho_tokens WHERE user_id = ?');
+        $stmt->execute([$_SESSION['user_id']]);
+        error_log("Zoho OAuth: Cleared existing tokens for user " . $_SESSION['user_id']);
+    } catch (PDOException $e) {
+        error_log("Zoho OAuth: Warning - Could not clear existing tokens: " . $e->getMessage());
+    }
     error_log("Zoho OAuth: No authorization code, redirecting to Zoho for authorization");
     $authorization_url = "https://accounts.zoho.com/oauth/v2/auth?" . http_build_query([
         'scope' => 'ZohoMail.accounts.READ ZohoMail.messages.CREATE',
