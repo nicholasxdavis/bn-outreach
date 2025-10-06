@@ -831,10 +831,36 @@
                          function checkZohoStatus() {
                               const statusContainer = document.getElementById('zoho-status');
                               if (isZohoConnected) {
-                                  statusContainer.innerHTML = `<p class="text-green-400 mb-4 flex items-center"><i class="fas fa-check-circle mr-2"></i>Zoho Mail is connected.</p><a href="disconnect_zoho.php" id="disconnect-zoho-btn" class="btn-secondary px-5 py-3 text-sm">Disconnect</a>`;
+                                  statusContainer.innerHTML = `
+                                      <p class="text-green-400 mb-4 flex items-center">
+                                          <i class="fas fa-check-circle mr-2"></i>Zoho Mail is connected.
+                                      </p>
+                                      <button id="disconnect-zoho-btn" class="btn-secondary px-5 py-3 text-sm hover:bg-red-600 hover:border-red-600 transition-colors">
+                                          <i class="fas fa-unlink mr-2"></i>Disconnect Zoho
+                                      </button>
+                                  `;
+
+                                  // Add event listener for disconnect button
+                                  setTimeout(() => {
+                                      const disconnectBtn = document.getElementById('disconnect-zoho-btn');
+                                      if (disconnectBtn) {
+                                          disconnectBtn.addEventListener('click', handleZohoDisconnect);
+                                      }
+                                  }, 0);
                               } else {
-                                  statusContainer.innerHTML = `<p class="text-text-secondary mb-4">Connect your Zoho Mail account to send outreach emails directly from this panel.</p><a href="zoho_oauth.php" id="connect-zoho-btn" class="btn-primary px-5 py-3 text-center inline-block">Connect to Zoho</a>`;
+                                  statusContainer.innerHTML = `
+                                      <p class="text-text-secondary mb-4">Connect your Zoho Mail account to send outreach emails directly from this panel.</p>
+                                      <a href="zoho_oauth.php" id="connect-zoho-btn" class="btn-primary px-5 py-3 text-center inline-block">
+                                          <i class="fas fa-link mr-2"></i>Connect to Zoho
+                                      </a>
+                                  `;
                               }
+                         }
+
+                         function handleZohoDisconnect() {
+                             if (confirm('Are you sure you want to disconnect your Zoho Mail account? You will need to reconnect to send emails.')) {
+                                 window.location.href = 'disconnect_zoho.php';
+                             }
                          }
                          
                          checkZohoStatus();
@@ -847,6 +873,14 @@
 
                          if (status === 'success') {
                              showToast('Zoho Mail connected successfully!', 'success');
+                             isZohoConnected = true;
+                             checkZohoStatus(); // Refresh the UI
+                             // Clean up URL
+                             window.history.replaceState({}, document.title, window.location.pathname);
+                         } else if (status === 'disconnected') {
+                             showToast('Zoho Mail disconnected successfully.', 'success');
+                             isZohoConnected = false;
+                             checkZohoStatus(); // Refresh the UI
                              // Clean up URL
                              window.history.replaceState({}, document.title, window.location.pathname);
                          } else if (status === 'error') {
