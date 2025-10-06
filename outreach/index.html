@@ -839,6 +839,22 @@
                          
                          checkZohoStatus();
                          loadOutreachLog();
+
+                         // Check for Zoho OAuth status messages
+                         const urlParams = new URLSearchParams(window.location.search);
+                         const status = urlParams.get('status');
+                         const message = urlParams.get('message');
+
+                         if (status === 'success') {
+                             showToast('Zoho Mail connected successfully!', 'success');
+                             // Clean up URL
+                             window.history.replaceState({}, document.title, window.location.pathname);
+                         } else if (status === 'error') {
+                             const errorMsg = message ? decodeURIComponent(message) : 'Failed to connect Zoho Mail';
+                             showToast('Zoho connection failed: ' + errorMsg, 'error');
+                             // Clean up URL
+                             window.history.replaceState({}, document.title, window.location.pathname);
+                         }
                      }
          
                      async function handleLogin(event) {
