@@ -18,6 +18,7 @@
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
           
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
           
       <style>
                  /* Blacnova Inspired UI & Dark Theme */
@@ -231,44 +232,6 @@
       </style>
    </head>
    <body class="min-h-screen">
-              
-      <div id="auth-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-black backdrop-blur-sm" style="display: none;">
-                 
-         <div id="auth-modal" class="glass-card p-8 rounded-2xl w-full max-w-sm">
-                         
-            <div class="flex justify-center mb-4">
-                                <img src="https://www.blacnova.net/img/bn_orange.png" alt="Blacnova Logo" class="h-12 w-12 object-contain">
-                            
-            </div>
-                         
-            <h2 class="text-2xl font-bold text-center text-white mb-2">Restricted Access</h2>
-                         
-            <p class="text-center text-gray-400 mb-6">Please enter your credentials to continue.</p>
-                         
-            <form id="login-form">
-                                
-               <div class="mb-4">
-                                       <label for="username" class="block text-sm font-medium text-gray-400 mb-2">User</label>
-                                       <input type="text" id="username" class="w-full bg-[#1a1a1a] border border-gray-700 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-primary transition text-white" required>
-                                   
-               </div>
-                                
-               <div class="mb-6">
-                                       <label for="passcode" class="block text-sm font-medium text-gray-400 mb-2">Passcode</label>
-                                       <input type="password" id="passcode" class="w-full bg-[#1a1a1a] border border-gray-700 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-primary transition text-white" required>
-                                   
-               </div>
-                                <button type="submit" class="w-full btn-primary font-bold py-2 px-4 rounded-lg">
-                                    Login
-                                </button>
-                                
-               <p id="auth-error" class="text-red-500 text-sm text-center mt-4 hidden">Invalid credentials. Please try again.</p>
-                            
-            </form>
-                    
-         </div>
-              
-      </div>
               
       <div id="main-content">
                          
@@ -507,11 +470,7 @@
       <div id="toast"></div>
           <script>
                  document.addEventListener('DOMContentLoaded', () => {
-                     const authOverlay = document.getElementById('auth-overlay');
-                     const loginForm = document.getElementById('login-form');
                      const mainContent = document.getElementById('main-content');
-                     const authError = document.getElementById('auth-error');
-                     const authModal = document.getElementById('auth-modal');
          
                      function initializeApp() {
                          mainContent.style.display = 'block';
@@ -914,57 +873,109 @@
                              window.history.replaceState({}, document.title, window.location.pathname);
                          }
                      }
-         
-                     async function handleLogin(event) {
-                        event.preventDefault();
-                        const usernameInput = document.getElementById('username');
-                        const passcodeİnput = document.getElementById('passcode');
-                        const username = usernameInput.value;
-                        const passcode = passcodeİnput.value;
-                        authError.classList.add('hidden');
-
-                        try {
-                            const response = await fetch('../auth.php', { // Note the path is now ../auth.php
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ username, passcode })
-                            });
-                            const result = await response.json();
-
-                            if (result.success) {
-                                authOverlay.style.transition = 'opacity 0.5s ease-out';
-                                authOverlay.style.opacity = '0';
-                                setTimeout(() => {
-                                    authOverlay.style.display = 'none';
-                                    initializeApp();
-                                }, 500);
-                            } else {
-                                authError.textContent = result.message || 'Invalid credentials. Please try again.';
-                                authError.classList.remove('hidden');
-                                authModal.classList.add('shake');
-                                usernameInput.value = '';
-                                passcodeİnput.value = '';
-                                setTimeout(() => { authModal.classList.remove('shake'); }, 820);
-                            }
-                        } catch (error) {
-                            console.error('Login request failed:', error);
-                            authError.textContent = 'An error occurred. Please try again later.';
-                            authError.classList.remove('hidden');
-                        }
-                    }
 
                     // Authentication Check from PHP session
-                    const isAuthenticated = <?php echo json_encode(isset($_SESSION['isAuthenticated']) && $_SESSION['isAuthenticated']); ?>;
-
-                    if (isAuthenticated) {
-                         authOverlay.style.display = 'none';
-                         initializeApp();
-                    } else {
-                         authOverlay.style.display = 'flex';
-                         loginForm.addEventListener('submit', handleLogin);
-                    }
+                    (async () => {
+                      try {
+                          const response = await fetch('../check_auth.php'); // Check auth from parent directory
+                          const data = await response.json();
+                          if (data.isAuthenticated) {
+                              initializeApp();
+                          } else {
+                            // Auth system will show login
+                          }
+                      } catch (error) {
+                          console.error('Auth check failed:', error);
+                      }
+                    })();
                  });
              
+      </script>
+      <script>
+      // Injectable Auth System for Blacnova (Adapted for bn-outreach/outreach)
+      (function() {
+          const authOverlay = document.createElement('div');
+          authOverlay.id = 'auth-overlay';
+          authOverlay.style.cssText = `
+              position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+              background: #000; display: flex; justify-content: center; align-items: center;
+              z-index: 9999; font-family: 'Poppins', sans-serif;
+              transition: opacity 0.3s ease-in-out;
+          `;
+
+          function showLogin() {
+              authOverlay.innerHTML = `
+                  <div style="background: #111; padding: 2rem; border-radius: 20px; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                      <div style="text-align: center; margin-bottom: 2rem;">
+                          <img src="https://www.blacnova.net/img/bn.png" alt="Blacnova Logo" style="width: 60px; height: 60px; margin: 0 auto 1rem;">
+                          <h2 style="color: #fff; margin: 0; font-weight: 600;">Restricted Access</h2>
+                          <p style="color: #888; margin: 0.5rem 0 0;">Sign in to the Outreach Tool</p>
+                      </div>
+                      <form id="login-form-main">
+                          <div style="margin-bottom: 1.5rem;">
+                              <label style="display: block; color: #ddd; margin-bottom: 0.5rem; font-size: 0.9rem;">Username</label>
+                              <input type="text" id="login-username-main" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #333; background: #222; color: #fff; font-size: 1rem; box-sizing: border-box;">
+                          </div>
+                          <div style="margin-bottom: 1.5rem;">
+                              <label style="display: block; color: #ddd; margin-bottom: 0.5rem; font-size: 0.9rem;">Passcode</label>
+                              <input type="password" id="login-passcode-main" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #333; background: #222; color: #fff; font-size: 1rem; box-sizing: border-box;">
+                          </div>
+                          <button type="submit" style="width: 100%; padding: 12px; border-radius: 12px; border: none; background: #d4611c; color: white; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s;">
+                              Sign In
+                          </button>
+                          <p id="login-error" style="color: #ff4444; text-align: center; margin: 1rem 0 0; display: none;">Invalid credentials</p>
+                      </form>
+                  </div>
+              `;
+              authOverlay.querySelector('#login-form-main').addEventListener('submit', handleLogin);
+          }
+
+          async function handleLogin(e) {
+              e.preventDefault();
+              const username = document.getElementById('login-username-main').value;
+              const passcode = document.getElementById('login-passcode-main').value;
+              const errorElement = document.getElementById('login-error');
+
+              try {
+                  const response = await fetch('../auth.php', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ username, passcode })
+                  });
+                  const data = await response.json();
+
+                  if (data.success) {
+                      authOverlay.style.opacity = '0';
+                      setTimeout(() => {
+                        authOverlay.style.display = 'none';
+                        location.reload(); 
+                      }, 300);
+                  } else {
+                      errorElement.textContent = data.message || 'Invalid credentials';
+                      errorElement.style.display = 'block';
+                  }
+              } catch (error) {
+                  errorElement.textContent = 'Connection error. Please try again.';
+                  errorElement.style.display = 'block';
+              }
+          }
+
+          // Initial Authentication Check
+          (async () => {
+              try {
+                  const response = await fetch('../check_auth.php');
+                  const data = await response.json();
+                  if (!data.isAuthenticated) {
+                    document.body.appendChild(authOverlay);
+                    showLogin();
+                  }
+              } catch (error) {
+                  console.error('Auth check failed:', error);
+                  document.body.appendChild(authOverlay);
+                  showLogin();
+              }
+          })();
+      })();
       </script>
    </body>
 </html>
