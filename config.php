@@ -1,13 +1,9 @@
 <?php
-require_once __DIR__ . '/vendor/autoload.php';
+// Suppress all output before JSON response
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
 
-// This loads a .env file if it exists (for local development)
-// but will NOT crash if it's missing (for production on Coolify).
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->safeLoad();
-
-// Use getenv() to reliably read the standard environment variables 
-// provided by the Coolify MariaDB service.
+// Read environment variables directly from Coolify
 $db_host = getenv('MARIADB_HOST');
 $db_name = getenv('MARIADB_DATABASE');
 $db_user = getenv('MARIADB_USER');
