@@ -75,7 +75,7 @@
     <div id="content-wrapper">
         <?php
             // Include the content of index.html
-            readfile('index.html');
+            include 'index.html';
         ?>
     </div>
 
