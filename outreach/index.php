@@ -628,7 +628,7 @@
                             generateBtn.disabled = true;
 
                             try {
-                                const response = await fetch('generate-email.php', {
+                                const response = await fetch('generate_email.php', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({ businessName, websiteStatus, reason })
