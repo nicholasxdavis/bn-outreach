@@ -113,29 +113,6 @@
                      color: white;
                      box-shadow: 0 0 10px rgba(234, 88, 12, 0.3);
                  }
-                 /* --- Sign Out Button Styles --- */
-                 #signout-btn {
-                     padding: 8px;
-                     border-radius: 8px;
-                     transition: all 0.2s ease-in-out;
-                 }
-                 #signout-btn:hover {
-                     background-color: rgba(239, 68, 68, 0.1);
-                     transform: scale(1.05);
-                 }
-                 #signout-btn:active {
-                     transform: scale(0.95);
-                 }
-                 /* Mobile responsive adjustments */
-                 @media (max-width: 640px) {
-                     #signout-btn {
-                         padding: 6px;
-                         margin: 0 2px;
-                     }
-                     #signout-btn i {
-                         font-size: 16px;
-                     }
-                 }
                  /* --- Authentication Styles --- */
                  #main-content {
                      display: none;
@@ -288,13 +265,10 @@
                                       
                   <div class="flex items-center space-x-4">
                                               <a href="../index.php" class="text-gray-400 hover:text-white transition-colors duration-200 text-sm sm:text-base mr-4">Business Index</a>
-                                             <button id="signout-btn" class="text-gray-400 hover:text-red-400 transition-colors duration-200" title="Sign Out">
-                                                 <i class="fas fa-sign-out-alt text-lg"></i>
-                                             </button>
                                              <button id="theme-toggle-btn" class="text-gray-400 hover:text-white transition-colors duration-200">
                                                  <i class="fas fa-moon text-lg"></i>
                                              </button>
-
+                                         
                   </div>
                                   
                </div>
@@ -328,7 +302,10 @@
                                                           
                   <div class="glass-card p-6 rounded-2xl">
                                              
-                     <h2 class="text-xl font-semibold mb-6">1. Enter Prospect Details</h2>
+                     <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-semibold">1. Enter Prospect Details</h2>
+                        <button id="fill-for-test" class="btn-secondary px-3 py-1 text-xs rounded-full">Fill for Test</button>
+                     </div>
                                              
                      <form id="draft-form" class="space-y-6">
                                                     
@@ -540,14 +517,6 @@
                          };
                          themeToggleBtn.addEventListener('click', toggleTheme);
                          applyTheme(localStorage.getItem('theme') || 'dark');
-
-                        // --- SIGN OUT FUNCTIONALITY ---
-                        const signoutBtn = document.getElementById('signout-btn');
-                        signoutBtn.addEventListener('click', () => {
-                            if (confirm('Are you sure you want to sign out?')) {
-                                window.location.href = 'signout.php';
-                            }
-                        });
          
                          const bodyElement = document.body;
                          if (bodyElement) {
@@ -644,6 +613,22 @@
                              e.preventDefault();
                              generateEmailWithAi();
                          });
+
+                         // --- TEST BUTTON ---
+                         const testBtn = document.getElementById('fill-for-test');
+                         testBtn.addEventListener('click', () => {
+                            document.getElementById('business-name').value = "Chilaso";
+                            document.getElementById('recipient-email').value = "test@example.com";
+                            document.getElementById('output-subject').value = "Enhancing Chilaso’s Website";
+                            document.getElementById('output-body').value = "Hi Chilaso Team,\nFirst off, thank you for your amazing products! I work at FARMesilla and we use your lime salt on many of our dishes—I have to admit, I’m a little hooked.\nI’m reaching out from Blacnova (www.blacnova.net). I noticed your website could use a refresh, and we’d love to help create a modern, user-friendly design. We can even build a demo site so you can see how it would look before making any decisions.\nWith our Blacnova Dashboard, your team can easily update products, promotions, or recipes anytime, and we provide full local support. Our goal is to make your online presence as appealing and professional as your products.\nIf you’re interested, I’d be happy to show you what we can do. You can reach me at nic@blacnova.net or (575) 270-1276.\nThanks again for your amazing work and for keeping us all hooked on Chilaso!\nBest regards,\n\nNicholas";
+
+                            document.getElementById('output-container').classList.remove('hidden');
+                            document.getElementById('placeholder-output').classList.add('hidden');
+                            document.getElementById('save-outreach-btn').disabled = false;
+                            document.getElementById('send-outreach-btn').disabled = !isZohoConnected;
+                            currentGeneratedEmail = { business: "Chilaso", subject: "Enhancing Chilaso’s Website" }; // Mock object for logging
+                            showToast("Test data filled!", "success");
+                         });
                          
                         async function generateEmailWithAi() {
                             const businessName = document.getElementById('business-name').value;
@@ -662,7 +647,7 @@
                             generateBtn.disabled = true;
 
                             try {
-                                const response = await fetch('generate_email.php', {
+                                const response = await fetch('generate-email.php', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({ businessName, websiteStatus, reason })
@@ -814,7 +799,7 @@
                               if (isZohoConnected) {
                                   statusContainer.innerHTML = `<p class="text-green-400 mb-4 flex items-center"><i class="fas fa-check-circle mr-2"></i>Zoho Mail is connected.</p><a href="disconnect_zoho.php" id="disconnect-zoho-btn" class="btn-secondary px-5 py-3 text-sm">Disconnect</a>`;
                               } else {
-                                  statusContainer.innerHTML = `<p class="text-text-secondary mb-4">Connect your Zoho Mail account to send outreach emails directly from this panel.</p><a href="zoho_oauth.php" id="connect-zoho-btn" class="btn-primary px-5 py-3 text-center inline-block">Connect to Zoho</a>`;
+                                  statusContainer.innerHTML = `<p class="text-text-secondary mb-4">Connect your Zoho Mail account to send outreach emails directly from this panel.</p><a href="zoho-oauth.php" id="connect-zoho-btn" class="btn-primary px-5 py-3 text-center inline-block">Connect to Zoho</a>`;
                               }
                          }
                          
