@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Blacnova | Business Index</title>
+      <link rel="icon" href="https://www.blacnova.net/img/bn_orange.png" type="image/png">
+      <script src="https://cdn.tailwindcss.com"></script>
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+      <style>
+         /* Blacnova Inspired UI & Dark Theme */
+         :root {
+            --primary: #ea580c;
+            --primary-light: #f97316;
+            --dark-bg: #0a0a0a;
+            --card-bg: #101010;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+         }
+         body {
+            background-color: #fff;
+            /* Default light background */
+            color: #1a1a1a;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            position: relative;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+         }
+         html.dark body {
+            background-color: #101010;
+            color: var(--text-primary);
+         }
+         html.dark #no-results {
+            color: var(--text-secondary);
+         }
+         /* General Styles */
+         .glass-card {
+            background-color: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+         }
+         .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            transition: all 0.2s ease-in-out;
+         }
+         .btn-primary:hover {
+            background-color: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(234, 88, 12, 0.3);
+         }
+         .btn-secondary {
+            background-color: #1a1a1a;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            transition: all 0.2s ease-in-out;
+         }
+         .btn-secondary:hover {
+            background-color: #2a2a2a;
+            border-color: var(--primary);
+         }
+         .btn-secondary.active {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            box-shadow: 0 0 10px rgba(234, 88, 12, 0.3);
+         }
+         /* Custom Toggle Switch */
+         .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+         }
+         .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+         }
+         .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #333;
+            transition: .4s;
+            border-radius: 24px;
+         }
+         .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+         }
+         input:checked+.slider {
+            background-color: var(--primary);
+         }
+         input:checked+.slider:before {
+            transform: translateX(20px);
+         }
+         /* Notes Textarea Animation */
+         .notes-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out, margin-top 0.4s ease-out;
+         }
+         .notes-container.open {
+            max-height: 200px;
+            margin-top: 0.75rem;
+         }
+         /* Card Animation */
+         .business-card {
+            animation: card-fade-in 0.5s ease-out forwards;
+         }
+         @keyframes card-fade-in {
+            from {
+               opacity: 0;
+               transform: translateY(20px);
+            }
+            to {
+               opacity: 1;
+               transform: translateY(0);
+            }
+         }
+         /* Shimmer Loading */
+         .shimmer {
+            background: linear-gradient(90deg, var(--card-bg) 25%, #222 50%, var(--card-bg) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+         }
+         @keyframes shimmer {
+            0% {
+               background-position: 200% 0;
+            }
+            100% {
+               background-position: -200% 0;
+            }
+         }
+         /* Custom Select Dropdown */
+         .custom-select-container {
+            position: relative;
+         }
+         .custom-select-button {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            background-color: #1a1a1a;
+            border: 1px solid #4a5568;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            color: white;
+            transition: all 0.2s ease-in-out;
+         }
+         .custom-select-button:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px var(--primary);
+         }
+         .custom-select-button .fas {
+            transition: transform 0.3s ease;
+         }
+         .custom-select-container.open .custom-select-button .fas {
+            transform: rotate(180deg);
+         }
+         .custom-select-panel {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: #1a1a1a;
+            border: 1px solid #4a5568;
+            border-top: none;
+            border-radius: 0 0 0.5rem 0.5rem;
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+         }
+         .custom-select-container.open .custom-select-panel {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+         }
+         .custom-select-option {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            color: white;
+         }
+         .custom-select-option:hover {
+            background-color: var(--primary);
+            color: #101010;
+         }
+         .date-picker-input {
+            width: 100%;
+            background-color: #1a1a1a;
+            border: 1px solid #4a5568;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            color: white;
+            margin-top: 0.5rem;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+         }
+         .date-picker-input::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+         }
+         /* --- Styles for Pattern Background --- */
+         .pattern-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+            mask-image: linear-gradient( to bottom, transparent 0%, black 15%, black 85%, transparent 100% );
+            -webkit-mask-image: linear-gradient( to bottom, transparent 0%, black 15%, black 85%, transparent 100% );
+         }
+         .pattern-icon {
+            position: absolute;
+            display: block;
+            width: 80px;
+            height: 80px;
+            background-image: url('img/icon.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            will-change: transform, opacity;
+            transition: background-image 0.3s ease;
+         }
+         html.dark .pattern-icon {
+            background-image: url('img/icon_dark.png');
+         }
+         /* --- Authentication Styles --- */
+         #main-content {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+         }
+         @keyframes shake {
+            10%, 90% {
+               transform: translate3d(-1px, 0, 0);
+            }
+            20%, 80% {
+               transform: translate3d(2px, 0, 0);
+            }
+            30%, 50%, 70% {
+               transform: translate3d(-4px, 0, 0);
+            }
+            40%, 60% {
+               transform: translate3d(4px, 0, 0);
+            }
+         }
+         .shake {
+            animation: shake 0.82s cubic-bezier(.36, .07, .19, .97) both;
+         }
+      </style>
+   </head>
+   <body class="min-h-screen">
+      <div id="auth-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-black backdrop-blur-sm" style="display: none;">
+         <div id="auth-modal" class="glass-card p-8 rounded-2xl w-full max-w-sm">
+            <div class="flex justify-center mb-4">
+               <img src="https://www.blacnova.net/img/bn_orange.png" alt="Blacnova Logo" class="h-12 w-12 object-contain">
+            </div>
+            <h2 class="text-2xl font-bold text-center text-white mb-2">Restricted Access</h2>
+            <p class="text-center text-gray-400 mb-6">Please enter your credentials to continue.</p>
+            <form id="login-form">
+               <div class="mb-4">
+                  <label for="username" class="block text-sm font-medium text-gray-400 mb-2">User</label>
+                  <input type="text" id="username" class="w-full bg-[#1a1a1a] border border-gray-700 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-primary transition text-white" required>
+               </div>
+               <div class="mb-6">
+                  <label for="passcode" class="block text-sm font-medium text-gray-400 mb-2">Passcode</label>
+                  <input type="password" id="passcode" class="w-full bg-[#1a1a1a] border border-gray-700 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-primary transition text-white" required>
+               </div>
+               <button type="submit" class="w-full btn-primary font-bold py-2 px-4 rounded-lg">
+               Login
+               </button>
+               <p id="auth-error" class="text-red-500 text-sm text-center mt-4 hidden">Invalid credentials. Please try again.</p>
+            </form>
+         </div>
+      </div>
+      <div id="main-content">
+         <header class="sticky top-0 z-40 w-full glass-card">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+               <div class="flex items-center justify-between py-4">
+                  <div class="flex items-center space-x-4">
+                     <img src="https://www.blacnova.net/img/bn.png" alt="Blacnova Logo" class="h-8 sm:h-14">
+                     <h1 class="text-xl md:text-2xl font-light text-white hidden sm:block">Business Index</h1>
+                     <div id="mobile-stats-counter" class="text-sm font-semibold text-gray-400 sm:hidden">
+                        <span id="mobile-count-text">... businesses</span>
+                     </div>
+                  </div>
+                  <div class="flex items-center space-x-4">
+                     <div id="stats-counter" class="text-sm text-gray-400 hidden md:block">
+                     </div>
+                     <a href="outreach/index.php" class="text-gray-400 hover:text-white transition-colors duration-200 text-sm sm:text-base">Outreach Tool</a>
+                     <button id="theme-toggle-btn" class="text-gray-400 hover:text-white transition-colors duration-200">
+                     <i class="fas fa-moon text-lg"></i>
+                     </button>
+                  </div>
+               </div>
+            </div>
+         </header>
+         <main class="container mx-auto p-4 sm:p-6 lg:p-8">
+            <div class="mb-8 p-6 glass-card rounded-2xl" style="position: relative; z-index: 30;">
+               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div class="lg:col-span-2">
+                     <label for="search" class="block text-sm font-medium text-gray-400 mb-2">Search Business</label>
+                     <div class="relative">
+                        <input type="text" id="search" placeholder="Enter name or industry..." class="w-full bg-[#1a1a1a] border border-gray-700 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary transition text-white">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                     </div>
+                  </div>
+                  <div>
+                     <label class="block text-sm font-medium text-gray-400 mb-2">Industry</label>
+                     <div id="industry-select" class="custom-select-container" data-value="all">
+                        <button class="custom-select-button">
+                        <span>All Industries</span>
+                        <i class="fas fa-chevron-down text-xs"></i>
+                        </button>
+                        <div class="custom-select-panel">
+                        </div>
+                     </div>
+                  </div>
+                  <div>
+                     <label class="block text-sm font-medium text-gray-400 mb-2">Sort By</label>
+                     <div id="sort-select" class="custom-select-container" data-value="alphabetical">
+                        <button class="custom-select-button">
+                        <span>Alphabetical</span>
+                        <i class="fas fa-chevron-down text-xs"></i>
+                        </button>
+                        <div class="custom-select-panel">
+                           <div class="custom-select-option" data-value="alphabetical">Alphabetical</div>
+                           <div class="custom-select-option" data-value="category">Category</div>
+                           <div class="custom-select-option" data-value="last-contacted">Last Contacted</div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               <div class="mt-6">
+                  <label class="block text-sm font-medium text-gray-400 mb-3">Filter by Status</label>
+                  <div id="filter-toggles" class="flex flex-wrap gap-3">
+                     <button class="btn-secondary active px-4 py-2 text-sm rounded-full" data-filter="all">Show All</button>
+                     <button class="btn-secondary px-4 py-2 text-sm rounded-full" data-filter="contacted">Contacted</button>
+                     <button class="btn-secondary px-4 py-2 text-sm rounded-full" data-filter="not-contacted">Not Contacted</button>
+                     <button class="btn-secondary px-4 py-2 text-sm rounded-full" data-filter="dont-contact">Don't Contact</button>
+                     <button class="btn-secondary px-4 py-2 text-sm rounded-full" data-filter="has-email">Has Email</button>
+                     <button class="btn-secondary px-4 py-2 text-sm rounded-full" data-filter="follow-up">Follow-up Needed</button>
+                  </div>
+               </div>
+            </div>
+            <div id="loading-indicator" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            </div>
+            <div id="businesses-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            </div>
+            <div id="sentinel" class="h-10"></div>
+            <div id="no-results" class="hidden text-center py-16 text-gray-500">
+               <i class="fas fa-search fa-3x mb-4"></i>
+               <h2 class="text-xl font-semibold">No businesses found.</h2>
+               <p>Try adjusting your search or filter criteria.</p>
+            </div>
+         </main>
+      </div>
+      <script>
+         document.addEventListener('DOMContentLoaded', () => {
+            const authOverlay = document.getElementById('auth-overlay');
+            const loginForm = document.getElementById('login-form');
+            const mainContent = document.getElementById('main-content');
+            const authError = document.getElementById('auth-error');
+            const authModal = document.getElementById('auth-modal');
+            
+            function initializeApp() {
+               mainContent.style.display = 'block';
+               setTimeout(() => {
+                  mainContent.style.opacity = '1';
+               }, 10);
+            
+               // --- Theme Toggle ---
+               const themeToggleBtn = document.getElementById('theme-toggle-btn');
+               const sunIconClass = 'fa-sun';
+               const moonIconClass = 'fa-moon';
+            
+               const applyTheme = (theme) => {
+                  const icon = themeToggleBtn.querySelector('i');
+                  if (theme === 'dark') {
+                     document.documentElement.classList.add('dark');
+                     icon.classList.remove(moonIconClass);
+                     icon.classList.add(sunIconClass);
+                  } else {
+                     document.documentElement.classList.remove('dark');
+                     icon.classList.remove(sunIconClass);
+                     icon.classList.add(moonIconClass);
+                  }
+               };
+            
+               const toggleTheme = () => {
+                  const currentTheme = localStorage.getItem('theme') || 'light';
+                  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                  localStorage.setItem('theme', newTheme);
+                  applyTheme(newTheme);
+               };
+            
+               themeToggleBtn.addEventListener('click', toggleTheme);
+               applyTheme(localStorage.getItem('theme') || 'light');
+            
+               // --- Dynamic Background Pattern ---
+               const bodyElement = document.body;
+               if (bodyElement) {
+                  const patternContainer = document.createElement('div');
+                  patternContainer.className = 'pattern-container';
+                  bodyElement.prepend(patternContainer);
+            
+                  const iconCount = 50;
+                  const minDistance = 18;
+                  const placedIcons = [];
+                  const maxAttempts = 100;
+            
+                  for (let i = 0; i < iconCount; i++) {
+                     let validPosition = false;
+                     let newIconPos = {};
+                     let attempts = 0;
+            
+                     while (!validPosition && attempts < maxAttempts) {
+                        newIconPos = {
+                           top: Math.random() * 100,
+                           left: Math.random() * 100
+                        };
+                        let isOverlapping = false;
+                        for (const placedIcon of placedIcons) {
+                           const distTop = newIconPos.top - placedIcon.top;
+                           const distLeft = newIconPos.left - placedIcon.left;
+                           if (Math.sqrt(distTop * distTop + distLeft * distLeft) < minDistance) {
+                              isOverlapping = true;
+                              break;
+                           }
+                        }
+                        if (!isOverlapping) {
+                           validPosition = true;
+                        }
+                        attempts++;
+                     }
+            
+                     if (validPosition) {
+                        placedIcons.push(newIconPos);
+                        const icon = document.createElement('span');
+                        icon.className = 'pattern-icon';
+                        const rotation = Math.random() * 360;
+                        const scale = 0.6 + Math.random() * 0.5;
+                        icon.style.top = `${newIconPos.top}%`;
+                        icon.style.left = `${newIconPos.left}%`;
+                        icon.style.transform = `translate(-50%, -50%) rotate(${rotation}deg) scale(${scale})`;
+                        icon.style.opacity = (0.03 + Math.random() * 0.04).toFixed(3);
+                        patternContainer.appendChild(icon);
+                     }
+                  }
+               }
+            
+               const grid = document.getElementById('businesses-grid');
+               const searchInput = document.getElementById('search');
+               const industrySelect = document.getElementById('industry-select');
+               const sortSelect = document.getElementById('sort-select');
+               const filterTogglesContainer = document.getElementById('filter-toggles');
+               const loadingIndicator = document.getElementById('loading-indicator');
+               const noResults = document.getElementById('no-results');
+               const sentinel = document.getElementById('sentinel');
+               const statsCounter = document.getElementById('stats-counter');
+               const mobileStatsCounter = document.getElementById('mobile-count-text'); // New mobile counter
+            
+               let allBusinesses = [];
+               let filteredBusinesses = [];
+               let businessStates = {};
+               let currentFilter = 'all';
+            
+               let renderIndex = 0;
+               const batchSize = 20;
+            
+               function debounce(func, delay) {
+                  let timeout;
+                  return function(...args) {
+                     clearTimeout(timeout);
+                     timeout = setTimeout(() => func.apply(this, args), delay);
+                  };
+               }
+            
+               function createShimmerCard() {
+                  const card = document.createElement('div');
+                  card.className = 'rounded-2xl flex flex-col h-[420px] p-5 shimmer';
+                  card.innerHTML = `
+                              <div class="flex-grow">
+                                 <div class="flex justify-between items-start">
+                                       <div class="h-6 w-3/4 bg-gray-700 rounded mb-2"></div>
+                                       <div class="h-5 w-16 bg-gray-700 rounded-full"></div>
+                                 </div>
+                                 <div class="h-4 w-full bg-gray-700 rounded mb-2"></div>
+                                 <div class="h-4 w-1/2 bg-gray-700 rounded mb-4"></div>
+                                 <div class="flex items-center space-x-3 mb-5">
+                                    <div class="h-9 flex-1 bg-gray-700 rounded-lg"></div>
+                                    <div class="h-9 flex-1 bg-gray-700 rounded-lg"></div>
+                                 </div>
+                                 <div class="space-y-4">
+                                    <div class="h-6 w-full bg-gray-700 rounded"></div>
+                                    <div class="h-6 w-full bg-gray-700 rounded"></div>
+                                    <div class="h-6 w-full bg-gray-700 rounded"></div>
+                                 </div>
+                              </div>
+                              <div class="mt-4 pt-4 border-t border-gray-700">
+                                 <div class="h-4 w-1/2 bg-gray-700 rounded"></div>
+                              </div>
+                           `;
+                  return card;
+               }
+            
+               function showShimmer() {
+                  loadingIndicator.innerHTML = '';
+                  for (let i = 0; i < 8; i++) {
+                     loadingIndicator.appendChild(createShimmerCard());
+                  }
+                  loadingIndicator.style.display = 'grid';
+               }
+
+                async function loadStates() {
+                    try {
+                        const response = await fetch('get_business_states.php');
+                        if (!response.ok) throw new Error('Could not fetch states.');
+                        const states = await response.json();
+                        // Parse the JSON strings within the states object
+                        for (const key in states) {
+                            states[key] = JSON.parse(states[key]);
+                        }
+                        businessStates = states;
+                    } catch (error) {
+                        console.error('Error loading states:', error);
+                        businessStates = {};
+                    }
+                }
+
+                const saveState = debounce(async (id, state) => {
+                    try {
+                        await fetch('save_business_state.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ business_id: id, state_json: JSON.stringify(state) })
+                        });
+                    } catch (error) {
+                        console.error('Error saving state for', id, error);
+                    }
+                }, 500);
+
+            
+               function getBusinessId(business) {
+                  return (business.name + '-' + (business.address || '')).replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+               }
+            
+               async function fetchData() {
+                  showShimmer();
+                  try {
+                     await loadStates(); // Load states from DB before fetching business data
+                     const response = await fetch('https://nicholasxdavis.github.io/BN-db1/city/map.json');
+                     if (!response.ok) throw new Error('Network response was not ok');
+                     const geojsonData = await response.json();
+            
+                     allBusinesses = geojsonData.features.map(feature => ({
+                        name: feature.properties.BusinessName,
+                        industry: feature.properties.BusType,
+                        address: feature.properties.Addr,
+                        email: feature.properties.Email
+                     })).filter(b => b.name);
+            
+                     populateIndustries();
+                     applyFiltersAndSort();
+                  } catch (error) {
+                     console.error('Failed to fetch business data:', error);
+                     grid.innerHTML = `<p class="text-red-400 col-span-full text-center">Error: Could not load business data.</p>`;
+                  } finally {
+                     loadingIndicator.style.display = 'none';
+                  }
+               }
+            
+               function populateIndustries() {
+                  const industries = [...new Set(allBusinesses.map(b => b.industry).filter(Boolean))];
+                  industries.sort();
+                  const panel = industrySelect.querySelector('.custom-select-panel');
+                  panel.innerHTML = '<div class="custom-select-option" data-value="all">All Industries</div>';
+                  industries.forEach(industry => {
+                     const option = document.createElement('div');
+                     option.className = 'custom-select-option';
+                     option.dataset.value = industry;
+                     option.textContent = industry;
+                     panel.appendChild(option);
+                  });
+               }
+            
+               function applyFiltersAndSort() {
+                  const searchTerm = searchInput.value.toLowerCase();
+                  const selectedIndustry = industrySelect.dataset.value;
+                  const sortMethod = sortSelect.dataset.value;
+            
+                  let filtered = allBusinesses;
+            
+                  if (searchTerm) {
+                     filtered = filtered.filter(b => b.name.toLowerCase().includes(searchTerm) || (b.industry && b.industry.toLowerCase().includes(searchTerm)));
+                  }
+                  if (selectedIndustry !== 'all') {
+                     filtered = filtered.filter(b => b.industry === selectedIndustry);
+                  }
+                  if (currentFilter !== 'all') {
+                     filtered = filtered.filter(b => {
+                        const id = getBusinessId(b);
+                        const state = businessStates[id] || {};
+                        switch (currentFilter) {
+                           case 'contacted':
+                              return state.contacted;
+                           case 'not-contacted':
+                              return !state.contacted && !state.dontContact;
+                           case 'dont-contact':
+                              return state.dontContact;
+                           case 'has-email':
+                              return !!b.email;
+                           case 'follow-up':
+                              return state.followup;
+                           default:
+                              return true;
+                        }
+                     });
+                  }
+            
+                  filtered.sort((a, b) => {
+                     const idA = getBusinessId(a),
+                        idB = getBusinessId(b);
+                     const stateA = businessStates[idA] || {},
+                        stateB = businessStates[idB] || {};
+                     switch (sortMethod) {
+                        case 'category':
+                           return (a.industry || '').localeCompare(b.industry || '');
+                        case 'last-contacted':
+                           const dateA = stateA.lastContacted ? new Date(stateA.lastContacted) : 0;
+                           const dateB = stateB.lastContacted ? new Date(stateB.lastContacted) : 0;
+                           return dateB - dateA;
+                        default:
+                           return a.name.localeCompare(b.name);
+                     }
+                  });
+            
+                  filteredBusinesses = filtered;
+                  resetAndRender();
+               }
+            
+               function resetAndRender() {
+                  grid.innerHTML = '';
+                  renderIndex = 0;
+                  noResults.classList.toggle('hidden', filteredBusinesses.length > 0);
+                  loadMoreBusinesses();
+                  updateStats();
+               }
+            
+               function updateStats() {
+                  const total = filteredBusinesses.length;
+                  const shown = Math.min(renderIndex, total);
+                  statsCounter.textContent = `Showing ${shown} of ${total} businesses`;
+                  
+                  // Update mobile counter with just the total number of businesses for a concise display
+                  mobileStatsCounter.textContent = `${total} Total Businesses`;
+               }
+               
+               // Function to escape HTML to prevent XSS
+                function escapeHTML(str) {
+                    if (str === null || str === undefined) return '';
+                    const p = document.createElement('p');
+                    p.textContent = str;
+                    return p.innerHTML;
+                }
+
+               function createBusinessCard(business) {
+                  const id = getBusinessId(business);
+                  const state = businessStates[id] || {};
+                  const card = document.createElement('div');
+                  card.className = 'business-card glass-card rounded-2xl flex flex-col transition-all duration-300 hover:shadow-lg hover:border-primary';
+                  card.id = id;
+            
+                  const lastContactedDate = state.lastContacted ? new Date(state.lastContacted).toLocaleDateString() : 'N/A';
+                  const lastContactedValue = state.lastContacted ? new Date(state.lastContacted).toISOString().split('T')[0] : '';
+            
+                  card.innerHTML = `
+                              <div class="p-5 flex-grow">
+                                 <div class="flex justify-between items-start gap-2">
+                                    <div class="flex-1 min-w-0">
+                                       <h3 class="text-lg font-bold text-white mb-1 leading-tight">${escapeHTML(business.name)}</h3>
+                                    </div>
+                                    ${business.industry ? `<span class="flex-shrink-0 text-right bg-orange-600/20 text-orange-600 text-xs font-semibold px-2 py-1 rounded-full">${escapeHTML(business.industry)}</span>` : ''}
+                                 </div>
+                                 <p class="text-sm text-gray-400 mb-2">${escapeHTML(business.address || 'Address not available')}</p>
+                                 ${business.email ? `<p class="text-sm text-orange-600 truncate mb-4">${escapeHTML(business.email)}</p>` : `<div class="mb-4 h-5"></div>`}
+            
+                                 <div class="flex items-center space-x-3 mb-5">
+                                    <a href="https://www.google.com/search?q=${encodeURIComponent(business.name + ' Las Cruces New Mexico')}" target="_blank" class="flex-1 text-center bg-[#1a1a1a] text-orange-600 hover:bg-[#2a2a2a] border border-gray-700 text-sm py-2 px-3 rounded-lg transition"><i class="fab fa-google mr-2"></i>Google</a>
+                                    ${business.email ? `<a href="mailto:${business.email}" class="flex-1 text-center bg-[#1a1a1a] text-orange-600 hover:bg-[#2a2a2a] border border-gray-700 text-sm py-2 px-3 rounded-lg transition"><i class="fas fa-envelope mr-2"></i>Email</a>` : `<button disabled class="flex-1 text-center bg-gray-800 text-gray-500 text-sm py-2 px-3 rounded-lg cursor-not-allowed"><i class="fas fa-envelope mr-2"></i>Email</button>`}
+                                 </div>
+            
+                                 <div class="space-y-4 text-sm">
+                                    <label class="flex items-center justify-between cursor-pointer">
+                                       <span class="text-gray-300">Don't Contact</span>
+                                       <span class="switch"><input type="checkbox" class="toggle-dont-contact" ${state.dontContact ? 'checked' : ''}><span class="slider"></span></span>
+                                    </label>
+            
+                                    <label class="flex items-center justify-between cursor-pointer">
+                                       <span class="text-gray-300">Follow-up Needed</span>
+                                       <span class="switch"><input type="checkbox" class="toggle-followup" ${state.followup ? 'checked' : ''}><span class="slider"></span></span>
+                                    </label>
+            
+                                    <div>
+                                       <label class="block text-sm font-medium text-gray-300 mb-1">Contacted</label>
+                                       <div class="contacted-select custom-select-container" data-value="${state.contacted ? 'yes' : 'no'}">
+                                          <button class="custom-select-button">
+                                             <span>${state.contacted ? 'Yes' : 'No'}</span>
+                                             <i class="fas fa-chevron-down text-xs"></i>
+                                          </button>
+                                          <div class="custom-select-panel">
+                                             <div class="custom-select-option" data-value="yes">Yes</div>
+                                             <div class="custom-select-option" data-value="no">No</div>
+                                          </div>
+                                       </div>
+                                       <div class="date-picker-container mt-2 ${state.contacted ? '' : 'hidden'}">
+                                          <input type="date" class="date-picker-input" value="${lastContactedValue}">
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+            
+                              <div class="bg-black/20 p-4 rounded-b-2xl border-t border-gray-800">
+                                 <div class="flex justify-between items-center text-xs text-gray-400 mb-2">
+                                    <span>Last Contacted: <span class="font-semibold last-contacted-date">${lastContactedDate}</span></span>
+                                    <button class="toggle-notes hover:text-primary transition">
+                                       <i class="fas fa-sticky-note mr-1"></i> Notes
+                                    </button>
+                                 </div>
+                                 <div class="notes-container">
+                                    <textarea class="notes-textarea w-full bg-[#1a1a1a] border border-gray-700 rounded-lg p-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary transition" rows="3" placeholder="Add a note...">${escapeHTML(state.notes)}</textarea>
+                                    <button class="save-note-btn mt-2 w-full text-center bg-primary/80 hover:bg-primary text-white text-xs py-1 px-3 rounded-md transition">Save Note</button>
+                                 </div>
+                              </div>
+                           `;
+                  return card;
+               }
+            
+               function loadMoreBusinesses() {
+                  const fragment = document.createDocumentFragment();
+                  const endIndex = Math.min(renderIndex + batchSize, filteredBusinesses.length);
+                  for (let i = renderIndex; i < endIndex; i++) {
+                     const card = createBusinessCard(filteredBusinesses[i]);
+                     fragment.appendChild(card);
+                  }
+                  grid.appendChild(fragment);
+                  renderIndex = endIndex;
+                  updateStats();
+               }
+            
+               const observer = new IntersectionObserver(entries => {
+                  if (entries[0].isIntersecting && renderIndex < filteredBusinesses.length) {
+                     loadMoreBusinesses();
+                  }
+               }, {
+                  rootMargin: "200px"
+               });
+            
+               observer.observe(sentinel);
+            
+               function setupCustomSelect(container) {
+                  const button = container.querySelector('.custom-select-button');
+                  const panel = container.querySelector('.custom-select-panel');
+            
+                  button.addEventListener('click', () => {
+                     container.classList.toggle('open');
+                  });
+            
+                  panel.addEventListener('click', (e) => {
+                     if (e.target.classList.contains('custom-select-option')) {
+                        container.dataset.value = e.target.dataset.value;
+                        button.querySelector('span').textContent = e.target.textContent;
+                        container.classList.remove('open');
+                        applyFiltersAndSort();
+                     }
+                  });
+               }
+            
+               setupCustomSelect(industrySelect);
+               setupCustomSelect(sortSelect);
+            
+               document.addEventListener('click', (e) => {
+                  if (!industrySelect.contains(e.target)) {
+                     industrySelect.classList.remove('open');
+                  }
+                  if (!sortSelect.contains(e.target)) {
+                     sortSelect.classList.remove('open');
+                  }
+                  if (!e.target.closest('.contacted-select')) {
+                     grid.querySelectorAll('.contacted-select.open').forEach(d => d.classList.remove('open'));
+                  }
+               });
+            
+               const debouncedRender = debounce(applyFiltersAndSort, 300);
+               searchInput.addEventListener('input', debouncedRender);
+            
+               filterTogglesContainer.addEventListener('click', (e) => {
+                  if (e.target.tagName === 'BUTTON') {
+                     filterTogglesContainer.querySelector('.active').classList.remove('active');
+                     e.target.classList.add('active');
+                     currentFilter = e.target.dataset.filter;
+                     applyFiltersAndSort();
+                  }
+               });
+            
+               grid.addEventListener('change', e => {
+                  const card = e.target.closest('.business-card');
+                  if (!card) return;
+                  const id = card.id;
+                  if (!businessStates[id]) businessStates[id] = {};
+            
+                  let stateChanged = false;
+                  if (e.target.classList.contains('toggle-dont-contact')) {
+                     businessStates[id].dontContact = e.target.checked;
+                     stateChanged = true;
+                  } else if (e.target.classList.contains('toggle-followup')) {
+                     businessStates[id].followup = e.target.checked;
+                     stateChanged = true;
+                  } else if (e.target.classList.contains('date-picker-input')) {
+                     const newDate = new Date(e.target.value);
+                     const timezoneOffset = newDate.getTimezoneOffset() * 60000;
+                     businessStates[id].lastContacted = new Date(newDate.getTime() + timezoneOffset).toISOString();
+                     card.querySelector('.last-contacted-date').textContent = newDate.toLocaleDateString();
+                     stateChanged = true;
+                  }
+            
+                  if (stateChanged) saveState(id, businessStates[id]);
+               });
+            
+                grid.addEventListener('input', e => {
+                    if (e.target.classList.contains('notes-textarea')) {
+                        const card = e.target.closest('.business-card');
+                        if (!card) return;
+                        const id = card.id;
+                        if (!businessStates[id]) businessStates[id] = {};
+                        businessStates[id].notes = e.target.value;
+                        saveState(id, businessStates[id]); 
+                    }
+                });
+
+               grid.addEventListener('click', e => {
+                  const notesButton = e.target.closest('.toggle-notes');
+                  if (notesButton) {
+                     const card = notesButton.closest('.business-card');
+                     if (card) card.querySelector('.notes-container').classList.toggle('open');
+                  }
+            
+                  const saveButton = e.target.closest('.save-note-btn');
+                  if (saveButton) {
+                     const card = saveButton.closest('.business-card');
+                     const id = card.id;
+                     const notesTextarea = card.querySelector('.notes-textarea');
+                     if (!businessStates[id]) businessStates[id] = {};
+                     businessStates[id].notes = notesTextarea.value;
+                     saveState(id, businessStates[id]);
+            
+                     saveButton.textContent = 'Saved!';
+                     saveButton.classList.add('bg-green-600');
+                     setTimeout(() => {
+                        saveButton.textContent = 'Save Note';
+                        saveButton.classList.remove('bg-green-600');
+                     }, 2000);
+                  }
+            
+                  const contactedButton = e.target.closest('.contacted-select .custom-select-button');
+                  if (contactedButton) {
+                     const container = contactedButton.closest('.contacted-select');
+                     const wasOpen = container.classList.contains('open');
+                     grid.querySelectorAll('.contacted-select.open').forEach(d => d.classList.remove('open'));
+                     if (!wasOpen) container.classList.add('open');
+                  }
+            
+                  const contactedOption = e.target.closest('.contacted-select .custom-select-option');
+                  if (contactedOption) {
+                     const card = contactedOption.closest('.business-card');
+                     const id = card.id;
+                     const selectContainer = contactedOption.closest('.contacted-select');
+                     const buttonSpan = selectContainer.querySelector('.custom-select-button span');
+                     const dateContainer = card.querySelector('.date-picker-container');
+                     const dateInput = card.querySelector('.date-picker-input');
+            
+                     const value = contactedOption.dataset.value;
+            
+                     if (!businessStates[id]) businessStates[id] = {};
+            
+                     const isContacted = value === 'yes';
+                     businessStates[id].contacted = isContacted;
+            
+                     selectContainer.dataset.value = value;
+                     buttonSpan.textContent = isContacted ? 'Yes' : 'No';
+            
+                     if (isContacted) {
+                        dateContainer.classList.remove('hidden');
+                        if (!businessStates[id].lastContacted) {
+                           const today = new Date();
+                           const timezoneOffset = today.getTimezoneOffset() * 60000;
+                           const todayUTC = new Date(today.getTime() - timezoneOffset);
+                           businessStates[id].lastContacted = todayUTC.toISOString();
+                           dateInput.value = todayUTC.toISOString().split('T')[0];
+                           card.querySelector('.last-contacted-date').textContent = today.toLocaleDateString();
+                        }
+                     } else {
+                        dateContainer.classList.add('hidden');
+                     }
+            
+                     selectContainer.classList.remove('open');
+                     saveState(id, businessStates[id]);
+                  }
+               });
+            
+               fetchData();
+            }
+            
+            async function handleLogin(event) {
+                event.preventDefault();
+                const usernameInput = document.getElementById('username');
+                const passcodeİnput = document.getElementById('passcode');
+                const username = usernameInput.value;
+                const passcode = passcodeİnput.value;
+                authError.classList.add('hidden'); // Hide previous errors
+
+                try {
+                    const response = await fetch('auth.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, passcode })
+                    });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        authOverlay.style.transition = 'opacity 0.5s ease-out';
+                        authOverlay.style.opacity = '0';
+                        setTimeout(() => {
+                            authOverlay.style.display = 'none';
+                            initializeApp();
+                        }, 500);
+                    } else {
+                        authError.textContent = result.message || 'Invalid credentials. Please try again.';
+                        authError.classList.remove('hidden');
+                        authModal.classList.add('shake');
+                        usernameInput.value = '';
+                        passcodeİnput.value = '';
+                        setTimeout(() => { authModal.classList.remove('shake'); }, 820);
+                    }
+                } catch (error) {
+                    console.error('Login request failed:', error);
+                    authError.textContent = 'An error occurred. Please try again later.';
+                    authError.classList.remove('hidden');
+                }
+            }
+            
+            // Function to check authentication status via an API endpoint
+            async function checkAuthStatus() {
+                try {
+                    // This endpoint would check the session on the server
+                    const response = await fetch('check_auth.php'); 
+                    const data = await response.json();
+                    return data.isAuthenticated;
+                } catch (error) {
+                    console.error('Auth check failed:', error);
+                    return false;
+                }
+            }
+            
+            // Initial load check
+            (async () => {
+                const isAuthenticated = await checkAuthStatus();
+                if (isAuthenticated) {
+                    authOverlay.style.display = 'none';
+                    initializeApp();
+                } else {
+                    authOverlay.style.display = 'flex';
+                    loginForm.addEventListener('submit', handleLogin);
+                }
+            })();
+
+         });
+      </script>
+   </body>
+</html>
