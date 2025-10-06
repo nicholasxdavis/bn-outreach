@@ -8,7 +8,7 @@ if (!isset($_SESSION['isAuthenticated']) || !isset($_SESSION['user_id'])) {
 
 if (!isset($_GET['code'])) {
     $authorization_url = "https://accounts.zoho.com/oauth/v2/auth?" . http_build_query([
-        'scope' => 'ZohoMail.messages.CREATE',
+        'scope' => 'ZohoMail.accounts.READ ZohoMail.messages.CREATE',
         'client_id' => ZOHO_CLIENT_ID,
         'response_type' => 'code',
         'access_type' => 'offline',
@@ -69,4 +69,5 @@ if (!isset($_GET['code'])) {
         exit();
     }
 }
+
 ?>
