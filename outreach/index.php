@@ -113,6 +113,29 @@
                      color: white;
                      box-shadow: 0 0 10px rgba(234, 88, 12, 0.3);
                  }
+                 /* --- Sign Out Button Styles --- */
+                 #signout-btn {
+                     padding: 8px;
+                     border-radius: 8px;
+                     transition: all 0.2s ease-in-out;
+                 }
+                 #signout-btn:hover {
+                     background-color: rgba(239, 68, 68, 0.1);
+                     transform: scale(1.05);
+                 }
+                 #signout-btn:active {
+                     transform: scale(0.95);
+                 }
+                 /* Mobile responsive adjustments */
+                 @media (max-width: 640px) {
+                     #signout-btn {
+                         padding: 6px;
+                         margin: 0 2px;
+                     }
+                     #signout-btn i {
+                         font-size: 16px;
+                     }
+                 }
                  /* --- Authentication Styles --- */
                  #main-content {
                      display: none;
@@ -265,10 +288,13 @@
                                       
                   <div class="flex items-center space-x-4">
                                               <a href="../index.php" class="text-gray-400 hover:text-white transition-colors duration-200 text-sm sm:text-base mr-4">Business Index</a>
+                                             <button id="signout-btn" class="text-gray-400 hover:text-red-400 transition-colors duration-200" title="Sign Out">
+                                                 <i class="fas fa-sign-out-alt text-lg"></i>
+                                             </button>
                                              <button id="theme-toggle-btn" class="text-gray-400 hover:text-white transition-colors duration-200">
                                                  <i class="fas fa-moon text-lg"></i>
                                              </button>
-                                         
+
                   </div>
                                   
                </div>
@@ -514,6 +540,14 @@
                          };
                          themeToggleBtn.addEventListener('click', toggleTheme);
                          applyTheme(localStorage.getItem('theme') || 'dark');
+
+                        // --- SIGN OUT FUNCTIONALITY ---
+                        const signoutBtn = document.getElementById('signout-btn');
+                        signoutBtn.addEventListener('click', () => {
+                            if (confirm('Are you sure you want to sign out?')) {
+                                window.location.href = 'signout.php';
+                            }
+                        });
          
                          const bodyElement = document.body;
                          if (bodyElement) {
@@ -780,7 +814,7 @@
                               if (isZohoConnected) {
                                   statusContainer.innerHTML = `<p class="text-green-400 mb-4 flex items-center"><i class="fas fa-check-circle mr-2"></i>Zoho Mail is connected.</p><a href="disconnect_zoho.php" id="disconnect-zoho-btn" class="btn-secondary px-5 py-3 text-sm">Disconnect</a>`;
                               } else {
-                                  statusContainer.innerHTML = `<p class="text-text-secondary mb-4">Connect your Zoho Mail account to send outreach emails directly from this panel.</p><a href="zoho-oauth.php" id="connect-zoho-btn" class="btn-primary px-5 py-3 text-center inline-block">Connect to Zoho</a>`;
+                                  statusContainer.innerHTML = `<p class="text-text-secondary mb-4">Connect your Zoho Mail account to send outreach emails directly from this panel.</p><a href="zoho_oauth.php" id="connect-zoho-btn" class="btn-primary px-5 py-3 text-center inline-block">Connect to Zoho</a>`;
                               }
                          }
                          

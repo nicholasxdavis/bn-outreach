@@ -42,7 +42,7 @@ try {
 // Use getenv() for your other secrets as well.
 define('ZOHO_CLIENT_ID', getenv('ZOHO_API') ?: getenv('ZOHO_CLIENT_ID'));
 define('ZOHO_CLIENT_SECRET', getenv('ZOHO_CLIENT_SECRET'));
-define('ZOHO_REDIRECT_URI', 'http://' . $_SERVER['HTTP_HOST'] . '/Outreach/zoho-oauth.php');
+define('ZOHO_REDIRECT_URI', 'http://' . $_SERVER['HTTP_HOST'] . '/outreach/zoho_oauth.php');
 
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
